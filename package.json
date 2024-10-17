@@ -1,0 +1,33 @@
+{
+	"name": "thesnode",
+	"main": "dist/index.js",
+	"type": "module",
+	"scripts": {
+		"dev": "export $(cat .env.development | xargs) && pnpm exec prisma generate && nodemon",
+		"build:prod": "export $(cat .env.production | xargs) && pnpm exec prisma generate && tsc --outDir dist",
+		"clean": "rm -rf dist",
+		"start:prod": "export $(cat .env.production | xargs) && node dist/index.js",
+		"migrate:dev": "export $(cat .env.development | xargs) && pnpm exec prisma migrate dev && pnpm exec prisma generate",
+		"migrate:prod": "export $(cat .env.production | xargs) && pnpm exec prisma migrate deploy && pnpm exec prisma generate"
+	},
+	"dependencies": {
+		"@prisma/client": "5.21.0",
+		"@sapphire/discord.js-utilities": "^7.3.0",
+		"@sapphire/framework": "^5.2.1",
+		"@types/get-pixels": "^3.3.4",
+		"cheerio": "^1.0.0",
+		"discord.js": "14.x",
+		"domhandler": "^5.0.3",
+		"extract-colors": "^4.1.0",
+		"get-pixels": "^3.3.3",
+		"ky": "^1.7.2",
+		"node-fetch": "^3.3.2"
+	},
+	"devDependencies": {
+		"@types/node": "^22.7.5",
+		"nodemon": "^3.1.7",
+		"prisma": "^5.21.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.6.3"
+	}
+}
