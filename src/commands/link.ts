@@ -1,5 +1,10 @@
 import { Command } from '@sapphire/framework';
-import { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
+import { getSnUser } from '../utils/user.js';
+import { getLinkMessageAndEmbed, getLinkSuccessEmbed, getLinkUserConfirmationMessage, getUsernameHintMessageAndEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
+import { CustomError, ErrorType, handleCommandError } from '../utils/errors.js';
+import { generateKey } from '../utils/strings.js';
+import { findBySnUsername, linkUser, unlinkUser } from '../utils/database.js';
+
 
 export class PingCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -9,49 +14,72 @@ export class PingCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand((builder) =>
       builder
-      .setName('link')
-      .setDescription('Link your sticknodes.com account')
-      .addStringOption(option => {
-        return option
-        .setName('username')
-        .setDescription("Your sticknodes.com username")
-        .setRequired(true)
-      }),
-      {idHints: ['1295453491338154067']}
+        .setName('link')
+        .setDescription('Link your sticknodes.com account')
+        .addStringOption(option => {
+          return option
+            .setName('username')
+            .setDescription("Your sticknodes.com username")
+            .setRequired(true)
+        }),
+      { idHints: ['1295453491338154067'] }
     );
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    const username = interaction.options.getString('username');
+    try {
+      const username = interaction.options.getString('username') ?? '';
 
-    const msg = await interaction.reply({ content: `Searching for user...`, ephemeral: false, fetchReply: true });
+      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: false, fetchReply: true });
 
-    const successEmbed = new EmbedBuilder()
-    .setTitle("User found")
-    .addFields(
-      {
-        name: "Vince the Animator",
-        value: "[@vincetheanimator](https://sticknodes.com/members/vincetheanimator/)",
-        inline: false
-      },
-    )
-    .setImage("https://sticknodes.com/wp-content/uploads/avatars/4964/5dd10863c6933-bpfull.png")
-    .setColor("#33d17a");
+      const user = await getSnUser(username);
 
-    const failureEmbed = new EmbedBuilder()
-    .setTitle(`User "${username}" not found.`)
-    .setColor("#e01b24");
+      if (user.id === 0) {
+        const userNotFoundEmbed = getUserNotFoundEmbed(username);
+        let msgAndEmbed = getUsernameHintMessageAndEmbed();
+        const helpEmbed = msgAndEmbed.embedBuilder;
+        msgAndEmbed.messageBuilder.setEmbeds([userNotFoundEmbed, helpEmbed]);
+        return await interaction.editReply(msgAndEmbed.messageBuilder);
+      }
 
-    const confirmationButton = new ButtonBuilder()
-    .setCustomId('confirm')
-    .setLabel('Link this account')
-    .setStyle(ButtonStyle.Success);
+      const stillLinkedId = (await findBySnUsername(username).catch(error => { throw error }))?.discordId;
 
-    const confirmationRow = new ActionRowBuilder<ButtonBuilder>()
-	  .addComponents(confirmationButton);
+      const responseLinkUserConfirm = await interaction.editReply(getLinkUserConfirmationMessage(user, stillLinkedId));
 
+      const collectorFilter = (i: { user: { id: string; }; }) => i.user.id === interaction.user.id;
+      try {
+        const confirmation = await responseLinkUserConfirm.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
 
-    //return interaction.editReply({content: "", embeds: [successEmbed], components: [confirmationRow]});
-    return interaction.editReply({content: "", embeds: [failureEmbed]});
+        const key = generateKey();
+        const responseLinkVerify = await confirmation.update(getLinkMessageAndEmbed(key, interaction.user.username, username).messageBuilder);
+
+        try {
+          const verification = await responseLinkVerify.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
+          const bio = (await getSnUser(username, true)).bio;
+
+          const keyPresent = bio.includes(key);
+
+          if (keyPresent) {
+            if (stillLinkedId) await unlinkUser(stillLinkedId).catch(error => { throw error });
+
+            await linkUser(interaction.user.id, username).catch(error => { throw error });
+
+            return await verification.update({ content: '', embeds: [getLinkSuccessEmbed(interaction.user.id, username)], components: [], files: []});
+          } else {
+            throw new CustomError("Key not found in bio. Verification failed. Linking canceled. Please try again.", ErrorType.Warning, new Error("None to give!"));
+          }
+
+        } catch (error) {
+          if (error instanceof CustomError) throw error;
+          throw new CustomError("Verification not completed within 14 minutes. Linking canceled.", ErrorType.Warning, error as Error);
+        }
+
+      } catch (error) {
+        if (error instanceof CustomError) throw error;
+        throw new CustomError("Confirmation not received within 1 minute. Linking canceled.", ErrorType.Warning, error as Error);
+      }
+    } catch (error) {
+      handleCommandError(interaction, error);
+    }
   }
 }

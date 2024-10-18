@@ -13,11 +13,20 @@ export interface SnGroup {
     pinnedUpdate: string // PLACEHOLDER
 }
 
+export enum GroupManagement {
+    Owner = 'owner',
+    Administrator = 'administrator',
+    Moderator = 'moderator',
+    None = 'none',
+    Unknown = 'unknown'
+}
+
 export interface SnGroupPreview {
     id: string,
     name: string,
     iconUrl: string,
     public: boolean,
+    management: GroupManagement
 }
 
 export interface SnGroupStats {

@@ -12,6 +12,6 @@ datasource db {
 
 model User {
   discordId String  @id
-  snUsername  String?
+  snUsername  String? @unique
   createdAt DateTime @default(now())
 }

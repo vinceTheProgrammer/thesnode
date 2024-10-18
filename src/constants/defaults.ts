@@ -65,7 +65,9 @@ export const DEFAULT_USER_STATS: SnUserStats = {
     spotlightFeatureCount: null,
     isUserChoiceVoter: false,
     votingStreak: null,
-    bestVotingStreak: null
+    bestVotingStreak: null,
+    friendCount: 0, 
+    groupCount: 0
 };
 
 export const DEFAULT_USER_SOCIALS: SnUserSocials = {
@@ -88,8 +90,12 @@ export const DEFAULT_USER: SnUser = {
     trophies: [],
     stats: { ...DEFAULT_USER_STATS },
     managedGroups: [],
+    ownerCount: 0,
+    adminCount: 0,
+    modCount: 0,
     groups: [],
     friends: [],
     commentCaption: 'This is a default comment.',
-    socials: { ...DEFAULT_USER_SOCIALS }
+    socials: { ...DEFAULT_USER_SOCIALS },
+    banned: false
 };

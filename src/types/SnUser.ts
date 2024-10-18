@@ -10,10 +10,14 @@ export interface SnUser {
     trophies: SnTrophy[],
     stats: SnUserStats,
     managedGroups: SnGroupPreview[],
+    ownerCount: number,
+    adminCount: number,
+    modCount: number,
     groups: SnGroupPreview[],
     friends: SnUserPreview[],
+    socials: SnUserSocials,
     commentCaption: string,
-    socials: SnUserSocials
+    banned: boolean
 }
 
 export interface SnUserPreview {
@@ -44,7 +48,9 @@ export interface SnUserStats {
     spotlightFeatureCount: number | null,
     isUserChoiceVoter: boolean,
     votingStreak: number | null,
-    bestVotingStreak: number | null
+    bestVotingStreak: number | null,
+    friendCount: number,
+    groupCount: number
 }
 
 export interface SnUserSocials {

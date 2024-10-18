@@ -1,33 +1,37 @@
 {
 	"name": "thesnode",
-	"main": "dist/index.js",
+	"main": "dist/dev/index.js",
 	"type": "module",
 	"scripts": {
-		"dev": "export $(cat .env.development | xargs) && pnpm exec prisma generate && nodemon",
-		"build:prod": "export $(cat .env.production | xargs) && pnpm exec prisma generate && tsc --outDir dist",
-		"clean": "rm -rf dist",
-		"start:prod": "export $(cat .env.production | xargs) && node dist/index.js",
-		"migrate:dev": "export $(cat .env.development | xargs) && pnpm exec prisma migrate dev && pnpm exec prisma generate",
-		"migrate:prod": "export $(cat .env.production | xargs) && pnpm exec prisma migrate deploy && pnpm exec prisma generate"
+		"dev": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist/dev --onSuccess \"node ./dist/dev/index.js\"",
+		"build:prod": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist/prod",
+		"clean": "rm -rf dist/dev",
+		"clean:prod": "rm -rf dist/prod",
+		"clean:all": "rm -rf dist",
+		"start:prod": "export $(cat .env.production | xargs) && node dist/prod/index.js",
+		"migrate:dev": "export $(cat .env.development | xargs) &&  prisma migrate dev &&  prisma generate",
+		"migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate"
 	},
 	"dependencies": {
 		"@prisma/client": "5.21.0",
 		"@sapphire/discord.js-utilities": "^7.3.0",
 		"@sapphire/framework": "^5.2.1",
 		"@types/get-pixels": "^3.3.4",
+		"@types/turndown": "^5.0.5",
 		"cheerio": "^1.0.0",
 		"discord.js": "14.x",
 		"domhandler": "^5.0.3",
 		"extract-colors": "^4.1.0",
 		"get-pixels": "^3.3.3",
-		"ky": "^1.7.2",
-		"node-fetch": "^3.3.2"
+		"html-entities": "^2.5.2",
+		"node-fetch": "^3.3.2",
+		"turndown": "^7.2.0",
+		"undici": "^6.20.1"
 	},
 	"devDependencies": {
 		"@types/node": "^22.7.5",
-		"nodemon": "^3.1.7",
 		"prisma": "^5.21.0",
-		"ts-node": "^10.9.2",
+		"tsc-watch": "^6.2.0",
 		"typescript": "^5.6.3"
 	}
 }

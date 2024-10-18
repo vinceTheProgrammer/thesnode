@@ -2,7 +2,9 @@ import { Command } from '@sapphire/framework';
 import { EmbedBuilder, ApplicationCommandType } from 'discord.js';
 import type { User, ContextMenuCommandType } from 'discord.js';
 import { getSnUser } from '../utils/user.js';
-import { getUserEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
+import { getErrorEmbed, getNoUserLinkedEmbed, getUserEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
+import { CustomError, handleCommandError } from '../utils/errors.js';
+import { findByDiscordId, findBySnUsername } from '../utils/database.js';
 
 export class ProfileCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -12,42 +14,67 @@ export class ProfileCommand extends Command {
   public override registerApplicationCommands(registry: Command.Registry) {
     registry.registerChatInputCommand((builder) =>
       builder
-      .setName('profile')
-      .setDescription('View someone\'s sticknodes.com profile')
-      .addStringOption(option => {
-        return option
-        .setName('username')
-        .setDescription("Your sticknodes.com username")
-        .setRequired(true)
-      }),
-      {idHints: ['1295678105863716924']}
+        .setName('profile')
+        .setDescription('View someone\'s sticknodes.com profile')
+        .addStringOption(option => {
+          return option
+            .setName('username')
+            .setDescription("Your sticknodes.com username")
+            .setRequired(true)
+        }),
+      { idHints: ['1295678105863716924'] }
     );
 
     registry.registerContextMenuCommand((builder) =>
       builder
-      .setName('profile')
-      .setType(ApplicationCommandType.User as ContextMenuCommandType),
-      {idHints: ['1295965953258946621']}
+        .setName('profile')
+        .setType(ApplicationCommandType.User as ContextMenuCommandType),
+      { idHints: ['1295965953258946621'] }
     );
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    const username = interaction.options.getString('username');
+    try {
+      const username = interaction.options.getString('username') ?? '';
 
-    const msg = await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: false, fetchReply: true });
+      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: false, fetchReply: true });
 
-    const user = await getSnUser(username ? username : '');
+      const user = await getSnUser(username, true);
 
-    if (user.id === 0) {
-      return interaction.editReply({content: "", embeds: [getUserNotFoundEmbed(username ? username : '')]});
+      if (user.id === 0) {
+        return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(username)] });
+      }
+
+      const linkedDiscordId = (await findBySnUsername(username).catch(error => { throw error }))?.discordId;
+
+      const embed = await getUserEmbed(user, linkedDiscordId);
+
+      return await interaction.editReply({ content: "", embeds: [embed] });
+    } catch (error) {
+      handleCommandError(interaction, error);
     }
-
-    const embed = await getUserEmbed(user);
-
-    return interaction.editReply({content: "", embeds: [embed]});
   }
 
   public override async contextMenuRun(interaction: Command.ContextMenuCommandInteraction) {
-    return interaction.reply('Pong');
+    try {
+      await interaction.reply({ content: `Checking for linked sn account...`, ephemeral: false, fetchReply: true });
+      const linkedSnUsername = (await findByDiscordId(interaction.targetId).catch(error => { throw error }))?.snUsername;
+
+      if (linkedSnUsername) {
+        const user = await getSnUser(linkedSnUsername);
+
+        if (user.id === 0) {
+          return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(linkedSnUsername)] });
+        }
+
+        const embed = await getUserEmbed(user, interaction.targetId);
+
+        return await interaction.editReply({ content: "", embeds: [embed] });
+      } else {
+        return await interaction.editReply({ content: "", embeds: [getNoUserLinkedEmbed(interaction.targetId)] });
+      }
+    } catch (error) {
+      handleCommandError(interaction, error);
+    }
   }
 }

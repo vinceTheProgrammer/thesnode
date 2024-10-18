@@ -86,11 +86,26 @@ export function formatBadgePreviews(badges: SnBadgePreview[]): string {
 }
 
 export function formatTrophies(trophies: SnTrophy[]): string {
-    
+
 
     if (trophies.length === 0) return 'No trophies available.';
 
     const entries = trophies.map(trophy => trophy.name);
     const result = entries.join(', ');
     return truncateString(result, 256);
+}
+
+
+export function ordinalStringToNumber(input: string): number {
+    // Remove commas and ordinal suffixes using regex
+    const cleaned = input.replace(/(st|nd|rd|th)$/, "").replace(/,/g, "");
+
+    // Convert the cleaned string to a number
+    const number = parseInt(cleaned, 10);
+
+    if (isNaN(number)) {
+        throw new Error(`Invalid input: ${input}`);
+    }
+
+    return number;
 }
