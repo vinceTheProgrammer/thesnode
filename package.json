@@ -1,6 +1,6 @@
 {
 	"name": "thesnode",
-	"main": "dist/dev/index.js",
+	"main": "dist/prod/index.js",
 	"type": "module",
 	"scripts": {
 		"dev": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist/dev --onSuccess \"node ./dist/dev/index.js\"",

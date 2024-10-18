@@ -54,7 +54,7 @@ export class PingCommand extends Command {
         const responseLinkVerify = await confirmation.update(getLinkMessageAndEmbed(key, interaction.user.username, username).messageBuilder);
 
         try {
-          const verification = await responseLinkVerify.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
+          const verification = await responseLinkVerify.awaitMessageComponent({ filter: collectorFilter, time: 840_000 });
           const bio = (await getSnUser(username, true)).bio;
 
           const keyPresent = bio.includes(key);
