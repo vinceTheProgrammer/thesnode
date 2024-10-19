@@ -51,7 +51,7 @@ export class PingCommand extends Command {
         const confirmation = await responseLinkUserConfirm.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
 
         const key = generateKey();
-        const responseLinkVerify = await confirmation.update(getLinkMessageAndEmbed(key, interaction.user.username, username).messageBuilder);
+        const responseLinkVerify = await confirmation.update(getLinkMessageAndEmbed(key, interaction.user.id, username).messageBuilder);
 
         try {
           const verification = await responseLinkVerify.awaitMessageComponent({ filter: collectorFilter, time: 840_000 });

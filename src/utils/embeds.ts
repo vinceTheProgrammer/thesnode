@@ -144,17 +144,22 @@ export function getUsernameHintMessageAndEmbed(): MessageAndEmbed {
     }
 }
 
-export function getLinkMessageAndEmbed(key: string, discordUsername: string, snUsername: string): MessageAndEmbed {
+export function getLinkMessageAndEmbed(key: string, discordId: string, snUsername: string): MessageAndEmbed {
     const imageName = 'help_link_bio.jpg';
 
     const file = new AttachmentBuilder(getImagePath(imageName));
 
     const embed = new EmbedBuilder()
-        .setTitle(`Prepare to link discord user **${discordUsername}** to sticknodes.com user **${snUsername}**`)
+        .setDescription(`**Prepare to link sticknodes.com user __@${snUsername}__ to discord user <@${discordId}>.**`)
         .setFields(
             {
                 name: "Instructions",
-                value: `1. Navigate to your sticknodes.com profile.\n2. Edit this key: **${key}** anywhere in your bio.\n3. Click "Verify Ownership" button below.\n4. Once verification is complete, you can remove the key from your bio.`,
+                value: `1. Navigate to your [sticknodes.com profile](https://sticknodes.com/members/${snUsername}/profile).\n2. Edit this key: **${key}** anywhere in your bio.\n3. Click "Verify Ownership" button below.\n4. Once verification is complete, you can remove the key from your bio.`,
+                inline: false
+            },
+            {
+                name: "For copying key on mobile",
+                value: key,
                 inline: false
             }
         )
