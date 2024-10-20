@@ -31,7 +31,7 @@ export class PingCommand extends Command {
     try {
       const username = interaction.options.getString('username') ?? '';
 
-      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: false, fetchReply: true });
+      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: true });
 
       const user = await getSnUser(username);
 

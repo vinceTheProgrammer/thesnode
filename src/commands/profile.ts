@@ -21,6 +21,12 @@ export class ProfileCommand extends Command {
             .setName('username')
             .setDescription("Your sticknodes.com username")
             .setRequired(true)
+        })
+        .addBooleanOption(option => {
+          return option
+            .setName('visible-to-all')
+            .setDescription('Whether to make the result visible to everyone in chat. Default is false.')
+            .setRequired(false)
         }),
       { idHints: ['1295678105863716924'] }
     );
@@ -35,9 +41,11 @@ export class ProfileCommand extends Command {
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     try {
+      const visible = interaction.options.getBoolean('visible-to-all') ?? false;
+
       const username = interaction.options.getString('username') ?? '';
 
-      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: false, fetchReply: true });
+      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: !visible });
 
       const user = await getSnUser(username, true);
 
@@ -61,7 +69,7 @@ export class ProfileCommand extends Command {
 
   public override async contextMenuRun(interaction: Command.ContextMenuCommandInteraction) {
     try {
-      await interaction.reply({ content: `Checking for linked sn account...`, ephemeral: false, fetchReply: true });
+      await interaction.reply({ content: `Checking for linked sn account...`, ephemeral: true });
       const linkedSnUsername = (await findByDiscordId(interaction.targetId).catch(error => { throw error }))?.snUsername;
 
       if (linkedSnUsername) {
