@@ -46,10 +46,15 @@ Copy `.env.production.example` as `.env.production` and replace "bot-token-goes-
 
 ## Step 4, Build for production
 ```
-pnpm run build
+pnpm run build:prod
 ```
 
-## Step 5, Run in production mode
+## Step 5, Remove $NVM_PATH if needed
+If you do not have NVM managing your node installation, you will need to edit `package.json`. Find `$NVM_PATH` in the package.json and remove it.
+
+If you are using NVM, then you will need to set the `NVM_PATH` environment variable to the path to `nvm-exec`. (Usually located at `/home/username/.nvm/nvm-exec`)
+
+## Step 6, Run in production mode
 ```
 pnpm run start:prod
 ```
