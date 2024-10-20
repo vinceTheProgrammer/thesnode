@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type ColorResolvable } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, type ColorResolvable } from 'discord.js';
 import type { SnUser } from '../types/types.js';
 import { formatUserSocials, formatBadgePreviews, formatTrophies, formatGroupPreviews, truncateString } from './format.js';
 import { getAccentColorFromUrl, getRandomDefaultAvatarUrl } from './images.js';
@@ -6,10 +6,15 @@ import { getImagePath } from './assets.js';
 import { MessageBuilder } from '@sapphire/discord.js-utilities';
 import { htmlToMarkdown } from './strings.js';
 import { getCasualMonthDayStringFromDate, getCasualMonthDayYearStringFromDate } from './dates.js';
+import { syncBadgeRoles } from './roles.js';
 
-export async function getUserEmbed(user: SnUser, linkedDiscordId: string | null = null) {
+export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMember | null = null) {
+
+    const linkedDiscordId = linkedDiscordMember?.id ?? null;
 
     if (user.username === 'demonbot') return getDemonbotEmbed(user);
+
+    if (linkedDiscordMember) syncBadgeRoles(linkedDiscordMember, user).catch(err => {console.log(err)});
 
     const accentColor = await getAccentColorFromUrl(user.avatarUrl) as ColorResolvable;
     const unlockedTrophies = user.trophies.filter(trophy => trophy.unlockDate !== null);

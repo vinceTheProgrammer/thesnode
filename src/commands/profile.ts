@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework';
 import { EmbedBuilder, ApplicationCommandType } from 'discord.js';
-import type { User, ContextMenuCommandType } from 'discord.js';
+import type { User, ContextMenuCommandType, GuildMember } from 'discord.js';
 import { getSnUser } from '../utils/user.js';
 import { getErrorEmbed, getNoUserLinkedEmbed, getUserEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
 import { CustomError, handleCommandError } from '../utils/errors.js';
@@ -45,9 +45,13 @@ export class ProfileCommand extends Command {
         return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(username)] });
       }
 
-      const linkedDiscordId = (await findBySnUsername(username).catch(error => { throw error }))?.discordId;
+      const linkedDiscordId = (await findBySnUsername(username).catch(error => { throw error }))?.discordId ?? null;
 
-      const embed = await getUserEmbed(user, linkedDiscordId);
+      let linkedDiscordMember: GuildMember | null = null;
+
+      if (linkedDiscordId && interaction.guild) linkedDiscordMember = (await interaction.guild.members.fetch(linkedDiscordId).catch(err => {console.log(err)})) ?? null;
+
+      const embed = await getUserEmbed(user, linkedDiscordMember);
 
       return await interaction.editReply({ content: "", embeds: [embed] });
     } catch (error) {
@@ -67,7 +71,13 @@ export class ProfileCommand extends Command {
           return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(linkedSnUsername)] });
         }
 
-        const embed = await getUserEmbed(user, interaction.targetId);
+        const linkedDiscordId = interaction.targetId;
+
+        let linkedDiscordMember: GuildMember | null = null;
+
+        if (linkedDiscordId && interaction.guild) linkedDiscordMember = (await interaction.guild.members.fetch(linkedDiscordId).catch(err => {console.log(err)})) ?? null;
+
+        const embed = await getUserEmbed(user, linkedDiscordMember);
 
         return await interaction.editReply({ content: "", embeds: [embed] });
       } else {
