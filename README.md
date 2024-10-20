@@ -22,10 +22,7 @@ pnpm run migrate:dev
 ## Step 3, Create development .env file if needed
 Copy `.env.development.example` as `.env.development` and replace "bot-token-goes-here" with the actual development bot token.
 
-## Step 4, Update package.json to point to development dist folder
-Set "main" property in package.json to `dist/dev/index.js`
-
-## Step 5, Run in development mode (hot reloads as you make changes)
+## Step 4, Run in development mode (hot reloads as you make changes)
 ```
 pnpm run dev
 ```
@@ -47,15 +44,15 @@ pnpm run migrate:prod
 ## Step 3, Create production .env file if needed
 Copy `.env.production.example` as `.env.production` and replace "bot-token-goes-here" with the actual production bot token.
 
-## Step 4, Update package.json to point to production dist folder
-Set "main" property in package.json to `dist/prod/index.js`
-
-## Step 5, Build for production
+## Step 4, Build for production
 ```
-pnpm run build:prod
+pnpm run build
 ```
 
-## Step 6, Run in production mode
+## Step 5, Run in production mode
 ```
 pnpm run start:prod
 ```
+
+# Note
+Sometimes you may need to run `pnpm run clean` before `pnpm run dev`/`pnpm run start:prod` if you have an old build with some lingering deleted files (for example if deleting commands between builds).

@@ -1,14 +1,12 @@
 {
 	"name": "thesnode",
-	"main": "dist/prod/index.js",
+	"main": "dist/index.js",
 	"type": "module",
 	"scripts": {
-		"dev": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist/dev --onSuccess \"node ./dist/dev/index.js\"",
-		"build:prod": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist/prod",
-		"clean": "rm -rf dist/dev",
-		"clean:prod": "rm -rf dist/prod",
-		"clean:all": "rm -rf dist",
-		"start:prod": "export $(cat .env.production | xargs) && node dist/prod/index.js",
+		"dev": "export $(cat .env.development | xargs) &&  prisma generate && tsc-watch --outDir dist --onSuccess \"node ./dist/index.js\"",
+		"build": "export $(cat .env.production | xargs) &&  prisma generate && tsc --outDir dist",
+		"clean": "rm -rf dist",
+		"start:prod": "export $(cat .env.production | xargs) && node dist/index.js",
 		"migrate:dev": "export $(cat .env.development | xargs) &&  prisma migrate dev &&  prisma generate",
 		"migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate"
 	},
