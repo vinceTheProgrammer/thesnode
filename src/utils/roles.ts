@@ -25,7 +25,6 @@ export async function syncBadgeRoles(discordMember: GuildMember, snUser: SnUser)
             await discordMember.roles.remove(rolesToRemove);
         }
 
-        console.log(`Synced roles for ${snUser.username}`);
     } catch (error) {
         throw new CustomError(`Failed to sync roles for ${snUser.username}:`, ErrorType.Error, error as Error);
     }
