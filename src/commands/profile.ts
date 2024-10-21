@@ -27,6 +27,12 @@ export class ProfileCommand extends Command {
             .setName('visible-to-all')
             .setDescription('Whether to make the result visible to everyone in chat. Default is false.')
             .setRequired(false)
+        })
+        .addBooleanOption(option => {
+          return option
+            .setName('bypass-cache')
+            .setDescription("Whether to bypass the cache to get the most up to date profile from sticknodes.com.")
+            .setRequired(false)
         }),
       { idHints: ['1295678105863716924'] }
     );
@@ -42,12 +48,14 @@ export class ProfileCommand extends Command {
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
     try {
       const visible = interaction.options.getBoolean('visible-to-all') ?? false;
+      
+      const bypassCache = interaction.options.getBoolean('bypass-cache') ?? false;
 
       const username = interaction.options.getString('username') ?? '';
 
       await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: !visible });
 
-      const user = await getSnUser(username, true);
+      const user = await getSnUser(username, bypassCache);
 
       if (user.id === 0) {
         return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(username)] });

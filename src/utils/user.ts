@@ -33,6 +33,11 @@ export async function getSnUser(username: string, bypassCache: boolean = false):
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
+        const lastModified = response.headers.get('Last-Modified');
+        if (lastModified) {
+            snUser.fetchDate = new Date(lastModified);
+        }
+
         const html = await response.text();
 
         const $ = cheerio.load(html);

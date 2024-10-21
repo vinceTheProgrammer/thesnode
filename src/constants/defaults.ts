@@ -97,5 +97,6 @@ export const DEFAULT_USER: SnUser = {
     friends: [],
     commentCaption: 'This is a default comment.',
     socials: { ...DEFAULT_USER_SOCIALS },
-    banned: false
+    banned: false,
+    fetchDate: null
 };

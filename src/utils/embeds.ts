@@ -5,7 +5,7 @@ import { getAccentColorFromUrl, getRandomDefaultAvatarUrl } from './images.js';
 import { getImagePath } from './assets.js';
 import { MessageBuilder } from '@sapphire/discord.js-utilities';
 import { htmlToMarkdown } from './strings.js';
-import { getCasualMonthDayStringFromDate, getCasualMonthDayYearStringFromDate } from './dates.js';
+import { getCasualMonthDayStringFromDate, getCasualMonthDayYearStringFromDate, timeAgo } from './dates.js';
 import { syncBadgeRoles } from './roles.js';
 
 export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMember | null = null) {
@@ -20,6 +20,43 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
     const unlockedTrophies = user.trophies.filter(trophy => trophy.unlockDate !== null);
     let markdownBio = htmlToMarkdown(user.bio);
     if (markdownBio.length === 0) markdownBio = ' ';
+
+    const fields = [
+        {
+            name: "Badges",
+            value: formatBadgePreviews(user.badges),
+            inline: false
+        },
+        {
+            name: `Trophies (${unlockedTrophies.length}/10)`,
+            value: formatTrophies(unlockedTrophies),
+            inline: false
+        },
+        {
+            name: `Key Stats`,
+            value: `- Has **${user.stats.friendCount}** friends\n- Is in **${user.stats.groupCount}** groups\n- Is owner of **${user.ownerCount}** groups\n- Is admin of **${user.adminCount}** groups\n- Is mod of **${user.modCount}** groups${user.socials.birthday ? `\n- Birthday is **${getCasualMonthDayStringFromDate(user.socials.birthday)}**` : ''}\n- Joined on **${getCasualMonthDayYearStringFromDate(user.stats.joinDate)}**`,
+            inline: false
+        },
+        {
+            name: "Socials",
+            value: truncateString(formatUserSocials(user.socials), 512),
+            inline: false
+        },
+        {
+            name: "Linked Discord User",
+            value: `${linkedDiscordId ? `<@${linkedDiscordId}>` : 'No linked user.'}`,
+            inline: false
+        }
+    ]
+
+    if (user.fetchDate) {
+        fields.push({
+            name: '\u200b',
+            value: `This profile data was fetched **${timeAgo(user.fetchDate)}**.`,
+            inline: false
+       });
+    }
+
     return new EmbedBuilder()
         .setAuthor({
             name: truncateString(`@${user.banned ? `${user.username} [BANNED]` : user.username}`, 256),
@@ -27,33 +64,7 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
         })
         .setTitle(truncateString(user.displayname, 256))
         .setDescription(truncateString(markdownBio, 2048))
-        .addFields(
-            {
-                name: "Badges",
-                value: formatBadgePreviews(user.badges),
-                inline: false
-            },
-            {
-                name: `Trophies (${unlockedTrophies.length}/10)`,
-                value: formatTrophies(unlockedTrophies),
-                inline: false
-            },
-            {
-                name: `Key Stats`,
-                value: `- Has **${user.stats.friendCount}** friends\n- Is in **${user.stats.groupCount}** groups\n- Is owner of **${user.ownerCount}** groups\n- Is admin of **${user.adminCount}** groups\n- Is mod of **${user.modCount}** groups${user.socials.birthday ? `\n- Birthday is **${getCasualMonthDayStringFromDate(user.socials.birthday)}**` : ''}\n- Joined on **${getCasualMonthDayYearStringFromDate(user.stats.joinDate)}**`,
-                inline: false
-            },
-            {
-                name: "Socials",
-                value: truncateString(formatUserSocials(user.socials), 512),
-                inline: false
-            },
-            {
-                name: "Linked Discord User",
-                value: `${linkedDiscordId ? `<@${linkedDiscordId}>` : 'No linked user.'}`,
-                inline: false
-            }
-        )
+        .addFields(fields)
         .setThumbnail(user.avatarUrl)
         .setColor(accentColor)
         .setFooter({

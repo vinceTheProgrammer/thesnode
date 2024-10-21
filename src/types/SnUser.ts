@@ -17,7 +17,8 @@ export interface SnUser {
     friends: SnUserPreview[],
     socials: SnUserSocials,
     commentCaption: string,
-    banned: boolean
+    banned: boolean,
+    fetchDate: Date | null,
 }
 
 export interface SnUserPreview {
