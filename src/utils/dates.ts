@@ -88,3 +88,19 @@ export function timeAgo(date: Date | number): string {
     const years = Math.floor(months / 12);
     return `${years} year${years === 1 ? '' : 's'} ago`;
 }
+
+export function isBirthdayWithinTos(birthday: Date): boolean {
+    const tosAge = 13;
+
+    const today = new Date();
+
+    // Calculate the date tosAge years ago from today
+    const minAllowedDate = new Date(
+        today.getFullYear() - tosAge,
+        today.getMonth(),
+        today.getDate()
+    );
+
+    // Check if the birthday is on or before the minimum allowed date
+    return birthday <= minAllowedDate;
+}

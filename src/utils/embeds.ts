@@ -14,7 +14,7 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
 
     if (user.username === 'demonbot') return getDemonbotEmbed(user);
 
-    if (linkedDiscordMember) syncBadgeRoles(linkedDiscordMember, user).catch(err => {console.log(err)});
+    if (linkedDiscordMember) syncBadgeRoles(linkedDiscordMember, user).catch(err => { console.log(err) });
 
     const accentColor = await getAccentColorFromUrl(user.avatarUrl) as ColorResolvable;
     const unlockedTrophies = user.trophies.filter(trophy => trophy.unlockDate !== null);
@@ -54,7 +54,7 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
             name: '\u200b',
             value: `This profile data was fetched **${timeAgo(user.fetchDate)}**.`,
             inline: false
-       });
+        });
     }
 
     return new EmbedBuilder()
@@ -98,7 +98,7 @@ export function getNoUserLinkedEmbed(discordId: string) {
 export function getLinkSuccessEmbed(discordId: string, snUsername: string) {
     return new EmbedBuilder()
         .setDescription(truncateString(`Successfully linked **${snUsername}** to <@${discordId}>!`, 4096))
-        .setFooter({text: "💡 You can remove the key from your bio. It is no longer needed."})
+        .setFooter({ text: "💡 You can remove the key from your bio. It is no longer needed." })
         .setColor("#11ee11");
 }
 
@@ -206,15 +206,22 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
 async function getDemonbotEmbed(user: SnUser) {
     const accentColor = await getAccentColorFromUrl(user.avatarUrl) as ColorResolvable;
     return new EmbedBuilder()
-    .setAuthor({
-        name: truncateString(`@${user.username}`, 256),
-        url: `https://sticknodes.com/members/${user.username}/profile/`
-    })
-    .setTitle(truncateString(user.displayname, 256))
-    .setDescription(truncateString(htmlToMarkdown(user.bio), 2048))
-    .setThumbnail(user.avatarUrl)
-    .setColor(accentColor)
-    .setFooter({
-        text: truncateString(user.commentCaption, 64),
-    });
+        .setAuthor({
+            name: truncateString(`@${user.username}`, 256),
+            url: `https://sticknodes.com/members/${user.username}/profile/`
+        })
+        .setTitle(truncateString(user.displayname, 256))
+        .setDescription(truncateString(htmlToMarkdown(user.bio), 2048))
+        .setThumbnail(user.avatarUrl)
+        .setColor(accentColor)
+        .setFooter({
+            text: truncateString(user.commentCaption, 64),
+        });
+}
+
+export function getAlertEmbed(message: string) {
+    return new EmbedBuilder()
+        .setTitle('⚠️ Alert')
+        .setDescription(message)
+        .setColor('#ffff00');
 }

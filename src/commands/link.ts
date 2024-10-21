@@ -5,6 +5,7 @@ import { CustomError, ErrorType, handleCommandError } from '../utils/errors.js';
 import { generateKey } from '../utils/strings.js';
 import { findBySnUsername, linkUser, unlinkUser } from '../utils/database.js';
 import { syncBadgeRoles } from '../utils/roles.js';
+import { checkBirthdayIsWithinTos } from '../utils/moderation.js';
 
 
 export class PingCommand extends Command {
@@ -56,7 +57,8 @@ export class PingCommand extends Command {
 
         try {
           const verification = await responseLinkVerify.awaitMessageComponent({ filter: collectorFilter, time: 840_000 });
-          const bio = (await getSnUser(username, true)).bio;
+          const nonStaleUser = await getSnUser(username, true);
+          const bio = nonStaleUser.bio;
 
           const keyPresent = bio.includes(key);
 
@@ -69,6 +71,8 @@ export class PingCommand extends Command {
               const member = await interaction.guild.members.fetch(interaction.user.id).catch(err => {console.log(err)});
               if (member) syncBadgeRoles(member, user).catch(err => {console.log(err)});
             }
+
+            checkBirthdayIsWithinTos(nonStaleUser, interaction.user);
 
             return await verification.update({ content: '', embeds: [getLinkSuccessEmbed(interaction.user.id, username)], components: [], files: []});
           } else {
