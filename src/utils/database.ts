@@ -61,3 +61,32 @@ export async function findByDiscordId(discordId: string) {
         throw handlePrismaError(error);
     }
 }
+
+export async function findTodaysBirthdays() {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentDay = now.getDate();
+
+    const today = new Date(now.getFullYear(), currentMonth, currentDay);
+    const tomorrow = new Date(now.getFullYear(), currentMonth, currentDay + 1);
+    const birthday = new Date("2024-10-23 05:00:00");
+
+    console.log(birthday);
+
+    console.log(birthday >= today && birthday < tomorrow);
+    console.log(birthday > tomorrow);
+
+    try {
+        return await prisma.user.findMany({
+            where: {
+                birthday: {
+                    not: null,
+                    lt: tomorrow, // Start of tomorrow
+                    //gte: new Date(now.getFullYear(), currentMonth, currentDay), // Start of today's date
+                }
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}

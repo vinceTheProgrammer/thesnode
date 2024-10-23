@@ -13,5 +13,6 @@ datasource db {
 model User {
   discordId String  @id
   snUsername  String? @unique
+  birthday DateTime?
   createdAt DateTime @default(now())
 }

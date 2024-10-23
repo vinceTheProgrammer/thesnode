@@ -57,3 +57,14 @@ export function colorRoleIdsToRoleMentionsWithRequirements(colors: ColorRole[]) 
         return `<@&${color}> - (${requiredRolesString})`;
     });
 }
+
+export function dbUsersToDiscordMentions(users: {
+    createdAt: Date;
+    discordId: string;
+    snUsername: string | null;
+    birthday: Date | null;
+}[]) {
+    if (users.length == 0) throw new Error('users array is empty! cannot discord mentions from db users!');
+
+    return users.map(user => `<@${user.discordId}>`);
+}

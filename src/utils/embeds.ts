@@ -4,11 +4,12 @@ import { formatUserSocials, formatBadgePreviews, formatTrophies, formatGroupPrev
 import { getAccentColorFromUrl, getRandomDefaultAvatarUrl } from './images.js';
 import { getImagePath } from './assets.js';
 import { MessageBuilder } from '@sapphire/discord.js-utilities';
-import { colorRoleIdsToRoleMentionsWithRequirements, htmlToMarkdown, roleIdsToRoleMentions } from './strings.js';
+import { colorRoleIdsToRoleMentionsWithRequirements, htmlToMarkdown, roleIdsToRoleMentions, dbUsersToDiscordMentions } from './strings.js';
 import { getCasualMonthDayStringFromDate, getCasualMonthDayYearStringFromDate, timeAgo } from './dates.js';
 import { getUnlockedColors, syncBadgeRoles } from './roles.js';
 import { CustomError, ErrorType } from './errors.js';
 import { ColorRole } from '../constants/roles.js';
+import { descriptionVariants, titleVariants } from '../constants/birthdayMessages.js';
 
 export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMember | null = null) {
 
@@ -22,6 +23,8 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
     const unlockedTrophies = user.trophies.filter(trophy => trophy.unlockDate !== null);
     let markdownBio = htmlToMarkdown(user.bio);
     if (markdownBio.length === 0) markdownBio = ' ';
+
+    console.log(user.socials.birthday);
 
     const fields = [
         {
@@ -272,4 +275,34 @@ export function getUnlockedColorsEmbed(member: GuildMember) {
             inline: false
         }
     )
+}
+
+export function getBirthdayEmbed(birthdayUsers: {
+    createdAt: Date;
+    discordId: string;
+    snUsername: string | null;
+    birthday: Date | null;
+}[]) {
+
+    if (birthdayUsers.length == 0) throw new Error('birthdays array is empty! cannot construct birthday array!');
+
+    try {
+        const mentions = dbUsersToDiscordMentions(birthdayUsers);
+
+        const isPlural = (mentions: string[]): boolean => mentions.length > 1;
+
+        const title = titleVariants[Math.floor(Math.random() * titleVariants.length)] ?? 'Error';
+        const descriptionVariant = descriptionVariants[Math.floor(Math.random() * descriptionVariants.length)];
+
+        if (!descriptionVariant) throw new Error('description variant is not defined. cannot construct birthday array.');
+
+        const description = descriptionVariant(mentions, isPlural(mentions));
+
+        return new EmbedBuilder()
+            .setTitle(title)
+            .setDescription(description)
+            .setColor('#ff00ff');
+    } catch (error) {
+        throw error;
+    }
 }
