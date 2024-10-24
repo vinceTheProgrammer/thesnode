@@ -4,9 +4,11 @@ import { formatUserSocials, formatBadgePreviews, formatTrophies, formatGroupPrev
 import { getAccentColorFromUrl, getRandomDefaultAvatarUrl } from './images.js';
 import { getImagePath } from './assets.js';
 import { MessageBuilder } from '@sapphire/discord.js-utilities';
-import { htmlToMarkdown } from './strings.js';
+import { colorRoleIdsToRoleMentionsWithRequirements, htmlToMarkdown, roleIdsToRoleMentions } from './strings.js';
 import { getCasualMonthDayStringFromDate, getCasualMonthDayYearStringFromDate, timeAgo } from './dates.js';
-import { syncBadgeRoles } from './roles.js';
+import { getUnlockedColors, syncBadgeRoles } from './roles.js';
+import { CustomError, ErrorType } from './errors.js';
+import { ColorRole } from '../constants/roles.js';
 
 export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMember | null = null) {
 
@@ -224,4 +226,50 @@ export function getAlertEmbed(message: string) {
         .setTitle('⚠️ Alert')
         .setDescription(message)
         .setColor('#ffff00');
+}
+
+export function getBasicEmbed(titleDescriptionColor: {title?: string, description?: string, color?: number}) {
+    const title = titleDescriptionColor.title ?? null;
+    const description = titleDescriptionColor.description ?? null;
+    const color = titleDescriptionColor.color ?? null;
+
+    if (!title && !description) throw new CustomError("Whoever programmed this part of me forgot getBasicEmbed cannot have both a null title and null description... :/", ErrorType.Error);
+
+    return new EmbedBuilder()
+        .setTitle(title)
+        .setDescription(description)
+        .setColor(color);
+}
+
+export function getUnlockedColorsEmbed(member: GuildMember) {
+    const unlockedColors = getUnlockedColors(member);
+    const allColors = Object.values(ColorRole);
+
+    const lockedColors = allColors.filter(
+        color => !unlockedColors.includes(color)
+    );
+    let unlockedColorsString = 'None :(';
+    let lockedColorsString = 'None :)';
+
+    try {
+        unlockedColorsString = '- ' + roleIdsToRoleMentions(Object.values(unlockedColors)).join('\n- ');
+    } catch {}
+
+    try {
+        lockedColorsString = '- ' + colorRoleIdsToRoleMentionsWithRequirements(lockedColors).join('\n- ');
+    } catch {}
+    
+    return new EmbedBuilder()
+    .setFields(
+        {
+            name: "Unlocked Colors",
+            value: unlockedColorsString,
+            inline: false
+        },
+        {
+            name: "Locked Colors",
+            value: lockedColorsString,
+            inline: false
+        }
+    )
 }

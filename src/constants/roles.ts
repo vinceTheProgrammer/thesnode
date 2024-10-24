@@ -55,3 +55,39 @@ export const BADGE_TO_ROLE: Record<string, BadgeRole> = {
     "treasure-trove-winner": BadgeRole.TreasureTroveWinner,
     "stick-idol-winner": BadgeRole.StickIdolWinner,
 };
+
+export enum ColorRole {
+    FunBlue = '1298766291032866827',
+    ConiferGreen = '1298766092378046595',
+    Indigo = '1298765909586083931',
+    TussockOrange = '1298765586561765417',
+    BayouxBlue = '1298765368000774164',
+    MustardYellow = '1298765235292999751',
+    HeliotropePink = '1298765061178921020',
+    JordyBlue = '1298764889594265723',
+    HotPink = '1298753776076980285',
+    MountainMeadowGreen = '1298753575089995867',
+    CardinalRed = '1298753337210044569',
+    TangoOrange = '1298753093877497926',
+    GenoaGreen = '1298752555668602971',
+    CeruleanBlue = '1298752065585283102',
+    PurpleHeartPurple = '1298751975751553106'
+}
+
+export const ColorToBadgeMap: Record<ColorRole, BadgeRole[]> = {
+    [ColorRole.FunBlue]: [BadgeRole.RetiredStaff],
+    [ColorRole.ConiferGreen]: [BadgeRole.Translator],
+    [ColorRole.Indigo]: [BadgeRole.Occifer],
+    [ColorRole.TussockOrange]: [BadgeRole.MegaNoder, BadgeRole.ProNoder, BadgeRole.MasterNoder, BadgeRole.LegendaryNoder],
+    [ColorRole.BayouxBlue]: [BadgeRole.LegendaryNoder],
+    [ColorRole.MustardYellow]: [BadgeRole.FeaturedLvl1, BadgeRole.FeaturedLvl2, BadgeRole.FeaturedLvl3, BadgeRole.FeaturedLvl4],
+    [ColorRole.HeliotropePink]: [BadgeRole.FeaturedLvl4],
+    [ColorRole.JordyBlue]: [BadgeRole.UCWinnerLvl1, BadgeRole.UCWinnerLvl2, BadgeRole.UCWinnerLvl3, BadgeRole.UCWinnerLvl4],
+    [ColorRole.HotPink]: [BadgeRole.UCWinnerLvl4],
+    [ColorRole.MountainMeadowGreen]: [BadgeRole.UCVoter],
+    [ColorRole.CardinalRed]: [BadgeRole.Crusader],
+    [ColorRole.TangoOrange]: [BadgeRole.Halloween2018Winner, BadgeRole.Halloween2020Winner, BadgeRole.Halloween2021Winner, BadgeRole.Halloween2022Winner],
+    [ColorRole.GenoaGreen]: [BadgeRole.Christmas2020Winner, BadgeRole.Christmas2021Winner, BadgeRole.MerryMadnessWinner],
+    [ColorRole.CeruleanBlue]: [BadgeRole.TreasureTroveWinner],
+    [ColorRole.PurpleHeartPurple]: [BadgeRole.StickIdolWinner]
+}

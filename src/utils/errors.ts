@@ -9,10 +9,10 @@ export enum ErrorType {
 }
 
 export class CustomError extends Error {
-    originalError: Error;
+    originalError: Error | null;
     errorType: ErrorType;
 
-    constructor(message: string, errorType: ErrorType, originalError: Error) {
+    constructor(message: string, errorType: ErrorType, originalError: Error | null = null) {
         super(message); // Set the custom message.
         this.name = "CustomSnodeError"; // Optional: set a specific name.
         this.originalError = originalError;
@@ -47,5 +47,5 @@ export function handlePrismaError(error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         return new CustomError(`Prisma error! Error code: ${error.code}`, ErrorType.Error, error)
     }
-    return new CustomError("Strange Prisma error!", ErrorType.Error, new Error('None to give!'));
+    return new CustomError("Strange Prisma error!", ErrorType.Error);
 }

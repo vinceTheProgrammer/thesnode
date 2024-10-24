@@ -76,7 +76,7 @@ export class PingCommand extends Command {
 
             return await verification.update({ content: '', embeds: [getLinkSuccessEmbed(interaction.user.id, username)], components: [], files: []});
           } else {
-            throw new CustomError("Key not found in bio. Verification failed. Linking canceled. Please try again.", ErrorType.Warning, new Error("None to give!"));
+            throw new CustomError("Key not found in bio. Verification failed. Linking canceled. Please try again.", ErrorType.Warning);
           }
 
         } catch (error) {
