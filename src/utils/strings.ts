@@ -59,12 +59,18 @@ export function colorRoleIdsToRoleMentionsWithRequirements(colors: ColorRole[]) 
 }
 
 export function dbUsersToDiscordMentions(users: {
-    createdAt: Date;
     discordId: string;
-    snUsername: string | null;
     birthday: Date | null;
 }[]) {
     if (users.length == 0) throw new Error('users array is empty! cannot discord mentions from db users!');
 
     return users.map(user => `<@${user.discordId}>`);
 }
+
+export function formatUserList(users: string[]): string {
+    if (users.length === 0) return "";
+    if (users.length === 1) return `${users[0]}`; // Single user case
+    if (users.length === 2) return `${users[0]} and ${users[1]}`; // Special case for two users
+    const lastUser = users.pop(); // Remove the last user
+    return `${users.join(", ")}, and ${lastUser}`; // Join remaining users with commas
+  }

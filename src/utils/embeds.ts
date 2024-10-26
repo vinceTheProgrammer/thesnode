@@ -24,8 +24,6 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
     let markdownBio = htmlToMarkdown(user.bio);
     if (markdownBio.length === 0) markdownBio = ' ';
 
-    console.log(user.socials.birthday);
-
     const fields = [
         {
             name: "Badges",
@@ -278,9 +276,7 @@ export function getUnlockedColorsEmbed(member: GuildMember) {
 }
 
 export function getBirthdayEmbed(birthdayUsers: {
-    createdAt: Date;
     discordId: string;
-    snUsername: string | null;
     birthday: Date | null;
 }[]) {
 

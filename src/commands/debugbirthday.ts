@@ -3,6 +3,7 @@ import { sendEmbed } from '../utils/messages.js';
 import { findTodaysBirthdays } from '../utils/database.js';
 import { getBirthdayEmbed } from '../utils/embeds.js';
 import { Channels } from '../constants/channels.js';
+import { emojiVariants, getReactionEmoji } from '../constants/birthdayMessages.js';
 
 export class DebugBirthdayCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -21,10 +22,11 @@ export class DebugBirthdayCommand extends Command {
 
     try {
         const birthdayUsers = await findTodaysBirthdays();
-        console.log(birthdayUsers);
         if (birthdayUsers.length == 0) return;
         const birthdayEmbed = getBirthdayEmbed(birthdayUsers);
-        sendEmbed(Channels.BirthdayAnnounce, birthdayEmbed);
+        const msg = await sendEmbed(Channels.BirthdayAnnounce, birthdayEmbed);
+        const emoji = getReactionEmoji(birthdayEmbed.data.description ?? '');
+        msg?.react(emoji)
     } catch (error) {
         console.log(error);
     }

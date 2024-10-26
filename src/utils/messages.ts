@@ -11,10 +11,10 @@ export function sendAlert(channelId: string, message: string) {
     channel.send(messageBuilder);
 }
 
-export function sendEmbed(channelId: string, embedBuilder: EmbedBuilder) {
+export async function sendEmbed(channelId: string, embedBuilder: EmbedBuilder) {
     const channel = container.client.channels.cache.get(channelId);
     if (!channel || !(channel instanceof TextChannel)) return;
     let messageBuilder = new MessageBuilder()
     .setEmbeds([embedBuilder]);
-    channel.send(messageBuilder);
+    return await channel.send(messageBuilder);
 }
