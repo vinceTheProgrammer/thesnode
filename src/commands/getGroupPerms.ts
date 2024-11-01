@@ -25,7 +25,7 @@ export class GetGroupPermsCommand extends Command {
 
     registry.registerChatInputCommand((builder) =>
       builder.setName('get-group-perms').setDescription(`Check if you meet the requirements to get permission to create posts in "${groupChannelName}"`),
-      //{idHints: ['']}
+      {idHints: ['1301826141350264832']}
     );
   }
 
