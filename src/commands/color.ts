@@ -29,7 +29,7 @@ export class ColorCommand extends Command {
                         .setRequired(false)
                 })
             ,
-            //{idHints: ['']}
+            {idHints: ['1298906311123271721']}
         );
     }
 

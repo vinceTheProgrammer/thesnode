@@ -1,0 +1,16 @@
+{
+  "apps": [
+    {
+      "name": 'thesnode',
+      "script": '/home/vincetheprogrammer/.local/share/pnpm/pnpm',
+      "args": 'run start:prod',
+      "cwd": '/home/vincetheprogrammer/thesnode',
+      "env": {
+        "NODE_ENV": 'production',
+	"NODE_VERSION": 'v23.0.0',
+	"NVM_PATH": '/home/vincetheprogrammer/.nvm/nvm-exec'
+      }
+    }
+  ]
+}
+
