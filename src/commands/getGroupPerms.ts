@@ -4,7 +4,7 @@ import { CustomError, handleCommandError } from '../utils/errors.js';
 import { giveGroupPerms } from '../utils/roles.js';
 import { getBasicEmbed } from '../utils/embeds.js';
 import { Color } from '../constants/colors.js';
-import { DiscordMemberBeforeDateRequirement, HasAnySnBadgeRequirement, HasGroupMemberCountGENumber, OrRequirement, SticknodesMemberBeforeDateRequirement } from '../utils/requirements.js';
+import { HasAnySnBadgeRequirement, HasGroupMemberCountGENumber, OrRequirement, SticknodesMemberBeforeDateRequirement } from '../utils/requirements.js';
 import { getDateBefore } from '../utils/time.js';
 import { TimeUnit } from '../constants/time.js';
 import { ErrorMessage, ErrorType } from '../constants/errors.js';

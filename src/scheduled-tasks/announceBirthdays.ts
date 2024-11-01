@@ -2,7 +2,7 @@ import { ScheduledTask } from '@sapphire/plugin-scheduled-tasks';
 import { findTodaysBirthdays } from '../utils/database.js';
 import { sendEmbed } from '../utils/messages.js';
 import { getBirthdayEmbed } from '../utils/embeds.js';
-import { Channels } from '../constants/channels.js';
+import { ChannelId } from '../constants/channels.js';
 import { getReactionEmoji } from '../constants/birthdayMessages.js';
 
 export class AnnounceBirthdaysTask extends ScheduledTask {
@@ -18,7 +18,7 @@ export class AnnounceBirthdaysTask extends ScheduledTask {
 			const birthdayUsers = await findTodaysBirthdays();
 			if (birthdayUsers.length == 0) return;
 			const birthdayEmbed = getBirthdayEmbed(birthdayUsers);
-			const msg = await sendEmbed(Channels.BirthdayAnnounce, birthdayEmbed);
+			const msg = await sendEmbed(ChannelId.BirthdayAnnounce, birthdayEmbed);
 			const emoji = getReactionEmoji(birthdayEmbed.data.description ?? '');
 			msg?.react(emoji)
 		} catch (error) {
