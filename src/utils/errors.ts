@@ -1,12 +1,7 @@
 import type { Command } from "@sapphire/framework";
 import { getErrorEmbed, getWarningEmbed } from "./embeds.js";
 import { Prisma } from "@prisma/client";
-
-export enum ErrorType {
-    Error = 'error',
-    Warning = 'warning',
-    Note = 'note'
-}
+import { ErrorType } from "../constants/errors.js";
 
 export class CustomError extends Error {
     originalError: Error | null;

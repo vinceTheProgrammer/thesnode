@@ -1,7 +1,7 @@
 import type { User } from "discord.js";
 import type { SnUser } from "../types/SnUser.js";
 import { isBirthdayWithinTos } from "./dates.js";
-import { Channels } from "../constants/channels.js";
+import { ChannelId } from "../constants/channels.js";
 import { sendAlert } from "./messages.js";
 
 export async function checkBirthdayIsWithinTos(snUser: SnUser, discordUser: User) : Promise<void> {
@@ -10,5 +10,5 @@ export async function checkBirthdayIsWithinTos(snUser: SnUser, discordUser: User
 
     const message = `Discord user <@${discordUser.id}> just linked SN user **${snUser.username}**, which has a birthday that would put them as being under 13 years old.`;
 
-    if (!withinTos) sendAlert(Channels.ModTalk, message);
+    if (!withinTos) sendAlert(ChannelId.ModTalk, message);
 }

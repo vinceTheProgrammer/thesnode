@@ -1,9 +1,10 @@
 import { Command } from '@sapphire/framework';
 import { ColorRole } from '../constants/roles.js';
 import { formatEnumNameCapitalSpaced } from '../utils/strings.js';
-import { CustomError, ErrorType, handleCommandError } from '../utils/errors.js';
+import { CustomError, handleCommandError } from '../utils/errors.js';
 import { changeMemberSelectedColor, getUnlockedColors } from '../utils/roles.js';
 import { getBasicEmbed, getUnlockedColorsEmbed } from '../utils/embeds.js';
+import { ErrorType } from '../constants/errors.js';
 
 export class ColorCommand extends Command {
     public constructor(context: Command.LoaderContext, options: Command.Options) {

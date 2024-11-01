@@ -1,7 +1,8 @@
 import TurndownService from 'turndown';
 import { decode } from 'html-entities';
 import { BadgeRole, ColorToBadgeMap, type ColorRole } from '../constants/roles.js';
-import { CustomError, ErrorType } from './errors.js';
+import { CustomError } from './errors.js';
+import { ErrorType } from '../constants/errors.js';
 
 export function generateKey(length = 12) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

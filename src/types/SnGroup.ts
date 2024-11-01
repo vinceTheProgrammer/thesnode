@@ -5,12 +5,14 @@ export interface SnGroup {
     id: string,
     name: string,
     public: boolean,
+    iconUrl: string,
     description: string,
     admins: SnUserPreview[],
     mods: SnUserPreview[],
     members: SnUserPreview[],
     stats: SnGroupStats,
     pinnedUpdate: string // PLACEHOLDER
+    fetchDate: Date | null
 }
 
 export enum GroupManagement {
@@ -30,8 +32,9 @@ export interface SnGroupPreview {
 }
 
 export interface SnGroupStats {
-    createdDate: Date,
+    createdDate: Date | null,
     createdUser: SnUserPreview,
+    memberCount: number,
     averageWeeklyUpdates: number,
     averageWeeklyComments: number
 }

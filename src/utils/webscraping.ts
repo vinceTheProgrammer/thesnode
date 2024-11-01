@@ -1,9 +1,10 @@
 import * as cheerio from 'cheerio';
-import { DEFAULT_USER_STATS, DEFAULT_USER_SOCIALS } from '../constants/defaults.js';
-import type { SnUserSocials, SnUserStats, SnUser, SnTrophy, SnGroupPreview, SnBadgePreview } from '../types/types.js';
+import { DEFAULT_USER_STATS, DEFAULT_USER_SOCIALS, DEFAULT_USER_PREVIEW, DEFAULT_GROUP_STATS } from '../constants/defaults.js';
+import type { SnUserSocials, SnUserStats, SnUser, SnTrophy, SnGroupPreview, SnBadgePreview, SnGroup, SnUserPreview, SnGroupStats } from '../types/types.js';
 import type { Element, Text } from 'domhandler';
 import { ordinalStringToNumber } from './format.js';
 import { GroupManagement } from '../types/SnGroup.js';
+import { getDefaultAvatarUrl, getRandomDefaultAvatarUrl } from './images.js';
 
 export function updateSnUserBasicDataFromHtml(user: SnUser, html: string): SnUser {
     const $ = cheerio.load(html);
@@ -241,3 +242,123 @@ function extractFieldValue(className: string, $: cheerio.CheerioAPI): string | n
     const fieldValue = $(`.profile-fields .${className} .field-value p`).text().trim();
     return fieldValue.length > 0 ? fieldValue : null;
 };
+
+export function updateSnGroupBasicDataFromHtml(snGroup: SnGroup, html: string): SnGroup {
+    const $ = cheerio.load(html);
+
+    const titleMeta = $('.group-under-title-meta', '#item-header-content').text();
+
+    snGroup.public = titleMeta.toLowerCase().includes('public');
+
+    snGroup.iconUrl = $('#item-header-avatar').attr('src') || '';
+    snGroup.name = $('.group-header-top', '#item-header').find('h2').text();
+    snGroup.description = $('#item-meta').text();
+
+    return snGroup;
+}
+
+export function getSnGroupAdminsFromHtml(html: string): SnUserPreview[] {
+    const $ = cheerio.load(html);
+
+    const userPreviews : SnUserPreview[] = [];
+
+    $('#group-admins > li').each((_, element) => {
+        const userPreview = {...DEFAULT_USER_PREVIEW};
+
+        const modElement = $(element);
+        const avatarUrl = modElement.find('img').attr('src');
+        if (avatarUrl) userPreview.avatarUrl = avatarUrl;
+        const idMatch = modElement.find('img').attr('src')?.match(/avatars\/(\d+)\//);
+        if (idMatch) {
+            const id = idMatch[1] ? parseInt(idMatch[1], 10) : null;
+            if (id) userPreview.id = id;
+        }
+        const displayname = modElement.find('a').attr('data-bp-tooltip');
+        if (displayname) userPreview.displayname = displayname;
+        const userHref = modElement.find('a').attr('href');
+        const usernameMatch = userHref?.match(/members\/([^\/]+)\//);
+        if (usernameMatch) {
+            const username = usernameMatch[1] ? usernameMatch[1] : null;
+            if (username) userPreview.username = username;
+        }
+
+        userPreviews.push(userPreview);
+    });
+
+    return userPreviews;
+}
+
+export function getSnGroupModsFromHtml(html: string): SnUserPreview[] {
+    const $ = cheerio.load(html);
+
+    const userPreviews : SnUserPreview[] = [];
+    
+    $('#group-mods > li').each((_, element) => {
+        const userPreview = {...DEFAULT_USER_PREVIEW};
+
+        const modElement = $(element);
+        const avatarUrl = modElement.find('img').attr('src');
+        if (avatarUrl) userPreview.avatarUrl = avatarUrl;
+        const idMatch = modElement.find('img').attr('src')?.match(/avatars\/(\d+)\//);
+        if (idMatch) {
+            const id = idMatch[1] ? parseInt(idMatch[1], 10) : null;
+            if (id) userPreview.id = id;
+        }
+        const displayname = modElement.find('a').attr('data-bp-tooltip');
+        if (displayname) userPreview.displayname = displayname;
+        const userHref = modElement.find('a').attr('href');
+        const usernameMatch = userHref?.match(/members\/([^\/]+)\//);
+        if (usernameMatch) {
+            const username = usernameMatch[1] ? usernameMatch[1] : null;
+            if (username) userPreview.username = username;
+        }
+
+        userPreviews.push(userPreview);
+    });
+
+    return userPreviews;
+}
+
+export function getSnGroupStatsFromHtml(html: string): SnGroupStats {
+
+    const stats = { ...DEFAULT_GROUP_STATS};
+
+    const $ = cheerio.load(html);
+
+    const topStats = $('.group-under-title-meta', '#item-header-content').html() ?? '';
+    const bottomStats = $('.group-activity-meta', '#item-meta').text();
+
+    // Extract information from topStats
+    const createdOnMatch = topStats.match(/Created on ([\w\s\d,]+)/);
+    const createdOn = createdOnMatch ? createdOnMatch[1] : null;
+    if (createdOn) stats.createdDate = extractDate(createdOn);
+
+    const usernameMatch = topStats.match(/members\/([^\/]+)\//);
+    const username = usernameMatch ? usernameMatch[1] : null;
+
+    const admins = getSnGroupAdminsFromHtml(html);
+    const owner = admins.find(el => el.username === username);
+    if (owner) stats.createdUser = owner;
+
+
+    const memberCountMatch = topStats.match(/(\d+)\s+members/);
+    if (memberCountMatch) {
+        const memberCount = memberCountMatch[1] ? parseInt(memberCountMatch[1], 10) : null;
+        if (memberCount) stats.memberCount = memberCount;
+    }
+
+    // Extract information from bottomStats
+    const updatesMatch = bottomStats.match(/(\d+)\s+updates/);
+    if (updatesMatch) {
+        const averageUpdates = updatesMatch[1] ? parseInt(updatesMatch[1], 10) : null;
+        if (averageUpdates) stats.averageWeeklyUpdates = averageUpdates;
+    }
+
+    const commentsMatch = bottomStats.match(/(\d+)\s+comments/);
+    if (commentsMatch) {
+        const averageComments = commentsMatch[1] ? parseInt(commentsMatch[1], 10) : null;
+        if (averageComments) stats.averageWeeklyComments = averageComments;
+    }
+
+    return stats;
+}

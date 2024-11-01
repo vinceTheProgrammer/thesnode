@@ -54,6 +54,18 @@ export async function findByDiscordId(discordId: string) {
         return await prisma.user.findFirst({
             where: {
                 discordId: discordId,
+            }
+        })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function findByDiscordIdWhereSnUsernameNotNull(discordId: string) {
+    try {
+        return await prisma.user.findFirst({
+            where: {
+                discordId: discordId,
                 snUsername: { not: null }
             }
         })

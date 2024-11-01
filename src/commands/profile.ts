@@ -1,10 +1,10 @@
 import { Command } from '@sapphire/framework';
 import { EmbedBuilder, ApplicationCommandType } from 'discord.js';
 import type { User, ContextMenuCommandType, GuildMember } from 'discord.js';
-import { getSnUser } from '../utils/user.js';
+import { getSnUser } from '../utils/users.js';
 import { getErrorEmbed, getNoUserLinkedEmbed, getUserEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
 import { CustomError, handleCommandError } from '../utils/errors.js';
-import { findByDiscordId, findBySnUsername } from '../utils/database.js';
+import { findByDiscordIdWhereSnUsernameNotNull, findBySnUsername } from '../utils/database.js';
 
 export class ProfileCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -78,7 +78,7 @@ export class ProfileCommand extends Command {
   public override async contextMenuRun(interaction: Command.ContextMenuCommandInteraction) {
     try {
       await interaction.reply({ content: `Checking for linked sn account...`, ephemeral: true });
-      const linkedSnUsername = (await findByDiscordId(interaction.targetId).catch(error => { throw error }))?.snUsername;
+      const linkedSnUsername = (await findByDiscordIdWhereSnUsernameNotNull(interaction.targetId).catch(error => { throw error }))?.snUsername;
 
       if (linkedSnUsername) {
         const user = await getSnUser(linkedSnUsername);

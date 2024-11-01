@@ -7,8 +7,10 @@ import { MessageBuilder } from '@sapphire/discord.js-utilities';
 import { colorRoleIdsToRoleMentionsWithRequirements, htmlToMarkdown, roleIdsToRoleMentions } from './strings.js';
 import { getCasualMonthDayStringFromDate, getCasualMonthDayYearStringFromDate, timeAgo } from './dates.js';
 import { getUnlockedColors, syncBadgeRoles } from './roles.js';
-import { CustomError, ErrorType } from './errors.js';
+import { CustomError } from './errors.js';
 import { ColorRole } from '../constants/roles.js';
+import { Color } from '../constants/colors.js';
+import { ErrorType } from '../constants/errors.js';
 
 export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMember | null = null) {
 
@@ -36,7 +38,7 @@ export async function getUserEmbed(user: SnUser, linkedDiscordMember: GuildMembe
         },
         {
             name: `Key Stats`,
-            value: `- Has **${user.stats.friendCount}** friends\n- Is in **${user.stats.groupCount}** groups\n- Is owner of **${user.ownerCount}** groups\n- Is admin of **${user.adminCount}** groups\n- Is mod of **${user.modCount}** groups${user.socials.birthday ? `\n- Birthday is **${getCasualMonthDayStringFromDate(user.socials.birthday)}**` : ''}\n- Joined on **${getCasualMonthDayYearStringFromDate(user.stats.joinDate)}**`,
+            value: `- Has **${user.stats.friendCount}** friends\n- Is in **${user.stats.groupCount}** groups\n- Is owner of **${user.ownerCount}** groups\n- Is admin of **${user.adminCount}** groups\n- Is mod of **${user.modCount}** groups${user.socials.birthday ? `\n- Birthday is **${getCasualMonthDayStringFromDate(user.socials.birthday)}**` : ''}${user.stats.joinDate ? `\n- Joined on **${getCasualMonthDayYearStringFromDate(user.stats.joinDate)}**` : ''}`,
             inline: false
         },
         {
@@ -78,7 +80,7 @@ export function getUserNotFoundEmbed(username: string) {
     return new EmbedBuilder()
         .setTitle(truncateString(`User "${username}" not found :(`, 256))
         .setThumbnail(getRandomDefaultAvatarUrl())
-        .setColor("#ee1111");
+        .setColor(Color.ErrorRed);
 }
 
 export function getUserFoundEmbed(user: SnUser, stillLinkedId: string | null = null) {
@@ -88,20 +90,20 @@ export function getUserFoundEmbed(user: SnUser, stillLinkedId: string | null = n
         .setTitle(truncateString(`User "${user.username}" found :D`, 256))
         .setDescription(description)
         .setThumbnail(user.avatarUrl)
-        .setColor("#11ee11");
+        .setColor(Color.SuccessGreen);
 }
 
 export function getNoUserLinkedEmbed(discordId: string) {
     return new EmbedBuilder()
         .setDescription(truncateString(`No linked sticknodes.com account found for Discord user <@${discordId}>.`, 4096))
-        .setColor("#ee1111");
+        .setColor(Color.ErrorRed);
 }
 
 export function getLinkSuccessEmbed(discordId: string, snUsername: string) {
     return new EmbedBuilder()
         .setDescription(truncateString(`Successfully linked **${snUsername}** to <@${discordId}>!`, 4096))
         .setFooter({ text: "💡 You can remove the key from your bio. It is no longer needed." })
-        .setColor("#11ee11");
+        .setColor(Color.SuccessGreen);
 }
 
 // imposter
@@ -126,14 +128,14 @@ export function getErrorEmbed(error: string) {
     return new EmbedBuilder()
         .setTitle("😔 Error encountered. Please tell vincetheanimator")
         .setDescription(`Error message: ${error}`)
-        .setColor('#ff0000')
+        .setColor(Color.TotalRed)
 }
 
 export function getWarningEmbed(warning: string) {
     return new EmbedBuilder()
         .setTitle("Notice")
         .setDescription(`${warning}`)
-        .setColor('#ffff00')
+        .setColor(Color.TotalYellow)
 }
 
 interface MessageAndEmbed {
@@ -149,7 +151,7 @@ export function getUsernameHintMessageAndEmbed(): MessageAndEmbed {
     const embed = new EmbedBuilder()
         .setDescription(`💡 Make sure you're using the right username. It should be on your profile page after the @ or in the page url.`)
         .setImage(`attachment://${imageName}`)
-        .setColor('#eeee11')
+        .setColor(Color.HintYellow)
 
     const message = new MessageBuilder()
         .addFile(file)
@@ -183,7 +185,7 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
         )
         .setImage(`attachment://${imageName}`)
         .setFooter({ text: "This merely proves to TheSnode that you own this sticknodes.com account. It does not affect your Discord account or sticknodes.com account." })
-        .setColor('#1111ee')
+        .setColor(Color.NeutralBlue)
 
     const verifyButton = new ButtonBuilder()
         .setCustomId('link-verify')
@@ -225,7 +227,7 @@ export function getAlertEmbed(message: string) {
     return new EmbedBuilder()
         .setTitle('⚠️ Alert')
         .setDescription(message)
-        .setColor('#ffff00');
+        .setColor(Color.TotalYellow);
 }
 
 export function getBasicEmbed(titleDescriptionColor: {title?: string, description?: string, color?: number}) {

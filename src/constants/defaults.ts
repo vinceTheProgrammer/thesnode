@@ -26,8 +26,9 @@ export const DEFAULT_USER_PREVIEW: SnUserPreview = {
 };
 
 export const DEFAULT_GROUP_STATS: SnGroupStats = {
-    createdDate: new Date('2000-01-01'),
+    createdDate: null,
     createdUser: { ...DEFAULT_USER_PREVIEW},
+    memberCount: 0,
     averageWeeklyUpdates: 0,
     averageWeeklyComments: 0
 };
@@ -35,17 +36,19 @@ export const DEFAULT_GROUP_STATS: SnGroupStats = {
 export const DEFAULT_GROUP: SnGroup = {
     id: 'default-group',
     name: 'Default Group',
+    iconUrl: 'https://sticknodes.com/wp-content/plugins/buddypress/bp-core/images/mystery-group-50.png',
     public: false,
     description: 'This is a default group.',
     admins: [],
     mods: [],
     members: [],
     stats: { ...DEFAULT_GROUP_STATS},
-    pinnedUpdate: '' // PLACEHOLDER
+    pinnedUpdate: '', // PLACEHOLDER,
+    fetchDate: null
 };
 
 export const DEFAULT_USER_STATS: SnUserStats = {
-    joinDate: new Date('2000-01-01'),
+    joinDate: null,
     submissionCount: 0,
     firstSubmissionDate: null,
     lastSubmissionDate: null,

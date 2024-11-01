@@ -91,3 +91,34 @@ export const ColorToBadgeMap: Record<ColorRole, BadgeRole[]> = {
     [ColorRole.CeruleanBlue]: [BadgeRole.TreasureTroveWinner],
     [ColorRole.PurpleHeartPurple]: [BadgeRole.StickIdolWinner]
 }
+
+export enum RoleId {
+    GroupPerms = '1300984956813836390'
+}
+
+export const GoodRoles : string[] = [
+    BadgeRole.RetiredStaff,
+    BadgeRole.Translator,
+    BadgeRole.MegaNoder,
+    BadgeRole.ProNoder,
+    BadgeRole.MasterNoder,
+    BadgeRole.LegendaryNoder,
+    BadgeRole.FeaturedLvl1,
+    BadgeRole.FeaturedLvl2,
+    BadgeRole.FeaturedLvl3,
+    BadgeRole.FeaturedLvl4,
+    BadgeRole.UCWinnerLvl1,
+    BadgeRole.UCWinnerLvl2,
+    BadgeRole.UCWinnerLvl3,
+    BadgeRole.UCWinnerLvl4,
+    BadgeRole.UCVoter,
+    BadgeRole.Crusader,
+    BadgeRole.Halloween2018Winner,
+    BadgeRole.Halloween2020Winner,
+    BadgeRole.Halloween2021Winner,
+    BadgeRole.Halloween2022Winner,
+    BadgeRole.MerryMadnessWinner,
+    BadgeRole.TreasureTroveWinner,
+    BadgeRole.StickIdolWinner,
+    BadgeRole.Occifer
+]

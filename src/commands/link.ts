@@ -1,7 +1,8 @@
 import { Command } from '@sapphire/framework';
-import { getSnUser } from '../utils/user.js';
+import { getSnUser } from '../utils/users.js';
 import { getLinkMessageAndEmbed, getLinkSuccessEmbed, getLinkUserConfirmationMessage, getUsernameHintMessageAndEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
-import { CustomError, ErrorType, handleCommandError } from '../utils/errors.js';
+import { CustomError, handleCommandError } from '../utils/errors.js';
+import { ErrorType } from '../constants/errors.js';
 import { generateKey } from '../utils/strings.js';
 import { findBySnUsername, linkUser, unlinkUser } from '../utils/database.js';
 import { syncBadgeRoles } from '../utils/roles.js';

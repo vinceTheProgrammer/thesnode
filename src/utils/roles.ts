@@ -1,7 +1,8 @@
 import { GuildMember, Role } from "discord.js";
 import type { SnUser } from "../types/types.js";
-import { BADGE_TO_ROLE, BadgeRole, ColorRole, ColorToBadgeMap } from "../constants/roles.js";
-import { CustomError, ErrorType } from "./errors.js";
+import { BADGE_TO_ROLE, BadgeRole, ColorRole, ColorToBadgeMap, RoleId } from "../constants/roles.js";
+import { CustomError } from "./errors.js";
+import { ErrorType } from "../constants/errors.js";
 
 export async function syncBadgeRoles(discordMember: GuildMember, snUser: SnUser) {
     const memberRoles = new Set(discordMember.roles.cache.keys());
@@ -63,6 +64,17 @@ export async function changeMemberSelectedColor(member: GuildMember, selectedCol
 
         return role;
 
+    } catch (error) {
+        throw new CustomError(`Failed to update color roles.`, ErrorType.Error, error as Error);
+    }
+}
+
+export async function giveGroupPerms(member: GuildMember) {
+    const role = member.guild.roles.cache.get(RoleId.GroupPerms);
+    if (!role) throw new CustomError("Group Perms role could not be resolved", ErrorType.Error);
+
+    try {
+        await member.roles.add(role);
     } catch (error) {
         throw new CustomError(`Failed to update color roles.`, ErrorType.Error, error as Error);
     }

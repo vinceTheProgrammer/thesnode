@@ -1,28 +1,29 @@
-import * as cheerio from 'cheerio';
-import type { SnUser } from '../types/types.js';
+import type { SnGroupPreview, SnUser } from '../types/types.js';
 import { DEFAULT_USER } from '../constants/defaults.js';
-import { getSnUserStatsFromHtml, getSnUserSocialsFromHtml, updateSnUserBasicDataFromHtml, getSnUserManagedGroupsFromHtml, getSnUserTrophiesFromHtml, getSnUserBadgesFromHtml, getSnUserAdminCountFromManagedGroups, getSnUserModCountFromManagedGroups, getSnUserOwnerCountFromManagedGroups} from './webscraping.js'
-import { CustomError, ErrorType } from './errors.js';
+import { getSnUserStatsFromHtml, getSnUserSocialsFromHtml, updateSnUserBasicDataFromHtml, getSnUserManagedGroupsFromHtml, getSnUserTrophiesFromHtml, getSnUserBadgesFromHtml, getSnUserAdminCountFromManagedGroups, getSnUserModCountFromManagedGroups, getSnUserOwnerCountFromManagedGroups } from './webscraping.js'
+import { CustomError } from './errors.js';
+import { ErrorType } from '../constants/errors.js';
 
 export async function getSnUser(username: string, bypassCache: boolean = false): Promise<SnUser> {
-    let snUser : SnUser = { ...DEFAULT_USER};
+    let snUser: SnUser = { ...DEFAULT_USER };
+
+    const url = bypassCache
+        ? `https://sticknodes.com/members/${username}/profile?timestamp=${Date.now()}`
+        : `https://sticknodes.com/members/${username}/profile`;
+
+    const fetchOptions: RequestInit = bypassCache
+        ? {
+            cache: 'no-cache',
+            method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+        }
+        : { method: 'GET' }; // Standard fetch options without cache busting
+
     try {
-        const url = bypassCache 
-            ? `https://sticknodes.com/members/${username}/profile?timestamp=${Date.now()}` 
-            : `https://sticknodes.com/members/${username}/profile`;
-
-        const fetchOptions: RequestInit = bypassCache
-            ? {
-                cache: 'no-cache',
-                method: 'GET',
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                    'Expires': '0',
-                },
-              }
-            : { method: 'GET' }; // Standard fetch options without cache busting
-
         const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
@@ -39,8 +40,6 @@ export async function getSnUser(username: string, bypassCache: boolean = false):
         }
 
         const html = await response.text();
-
-        const $ = cheerio.load(html);
 
         snUser = updateSnUserBasicDataFromHtml(snUser, html);
 
@@ -59,7 +58,7 @@ export async function getSnUser(username: string, bypassCache: boolean = false):
         snUser.modCount = getSnUserModCountFromManagedGroups(snUser.managedGroups);
 
     } catch (error) {
-        throw new CustomError("Error fetching or parsing user page. (user.ts)", ErrorType.Error,  error as Error);
+        throw new CustomError("Error fetching or parsing user page. (user.ts)", ErrorType.Error, error as Error);
     }
 
     return snUser;

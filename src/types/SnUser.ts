@@ -29,7 +29,7 @@ export interface SnUserPreview {
 }
 
 export interface SnUserStats {
-    joinDate: Date,
+    joinDate: Date | null,
     submissionCount: number,
     firstSubmissionDate: Date | null,
     lastSubmissionDate: Date | null,
