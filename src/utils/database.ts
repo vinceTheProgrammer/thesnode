@@ -1,7 +1,7 @@
 import prisma from '../utils/prisma.js';
 import { handlePrismaError } from './errors.js';
 
-export async function linkUser(discordId: string, snUsername: string) {
+export async function linkUser(discordId: string, snUsername: string, birthday: Date | null) {
     try {
         return await prisma.user.upsert({
             where: {
@@ -9,17 +9,19 @@ export async function linkUser(discordId: string, snUsername: string) {
             },
             update: {
                 discordId: discordId,
-                snUsername: snUsername
+                snUsername: snUsername,
+                birthday: birthday
             },
             create: {
                 discordId: discordId,
                 snUsername: snUsername,
+                birthday: birthday
             },
         })
-    } catch(error) {
+    } catch (error) {
         throw handlePrismaError(error);
     }
-    
+
 }
 
 export async function unlinkUser(discordId: string) {
@@ -32,7 +34,7 @@ export async function unlinkUser(discordId: string) {
                 snUsername: null
             }
         })
-    } catch(error) {
+    } catch (error) {
         throw handlePrismaError(error);
     }
 }
@@ -69,6 +71,38 @@ export async function findByDiscordIdWhereSnUsernameNotNull(discordId: string) {
                 snUsername: { not: null }
             }
         })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function findTodaysBirthdays() {
+    const today = new Date();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+
+    try {
+
+        const users = await prisma.user.findMany({
+            where: {
+                birthday: {
+                    not: null,
+                },
+            },
+            select: {
+                discordId: true,
+                birthday: true,
+            },
+        });
+
+        const usersWithBirthdaysToday = users.filter((user) => {
+            const birthday = user.birthday as Date;
+            const birthdayMonth = (birthday.getMonth() + 1).toString().padStart(2, '0');
+            const birthdayDay = birthday.getDate().toString().padStart(2, '0');
+            return birthdayMonth === month && birthdayDay === day;
+        });
+
+        return usersWithBirthdaysToday;
     } catch (error) {
         throw handlePrismaError(error);
     }
