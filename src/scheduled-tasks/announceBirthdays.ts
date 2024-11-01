@@ -9,7 +9,7 @@ export class AnnounceBirthdaysTask extends ScheduledTask {
 	public constructor(context: ScheduledTask.LoaderContext, options: ScheduledTask.Options) {
 		super(context, {
 			...options,
-			pattern: '30 * * * * *'
+			pattern: '0 11 * * *'
 		});
 	}
 
