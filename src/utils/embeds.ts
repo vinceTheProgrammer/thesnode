@@ -186,7 +186,7 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
         )
         .setImage(`attachment://${imageName}`)
         .setFooter({ text: "This merely proves to TheSnode that you own this sticknodes.com account. It does not affect your Discord account or sticknodes.com account." })
-        .setColor(Color.NeutralBlue)
+        .setColor(Color.NeutralBlue);
 
     const verifyButton = new ButtonBuilder()
         .setCustomId('link-verify')
@@ -195,10 +195,14 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
 
     const row = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(verifyButton);
+    
+    const keyEmbed = new EmbedBuilder()
+        .setTitle(key)
+        .setColor(Color.NeutralBlue);
 
     const message = new MessageBuilder()
         .addFile(file)
-        .setEmbeds([embed])
+        .setEmbeds([embed, keyEmbed])
         .setContent('')
         .setComponents([row]);
 
