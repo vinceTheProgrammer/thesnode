@@ -8,7 +8,8 @@
 		"clean": "rm -rf dist",
 		"start:prod": "export $(cat .env.production | xargs) && $NVM_PATH node dist/index.js",
 		"migrate:dev": "export $(cat .env.development | xargs) &&  prisma migrate dev &&  prisma generate",
-		"migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate"
+		"migrate:prod": "export $(cat .env.production | xargs) &&  prisma migrate deploy &&  prisma generate",
+		"reset:redis": "redis-cli FLUSHALL"
 	},
 	"dependencies": {
 		"@prisma/client": "5.21.0",
