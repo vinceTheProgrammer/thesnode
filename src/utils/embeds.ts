@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, type ColorResolvable } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, type ColorResolvable, type InteractionReplyOptions } from 'discord.js';
 import type { SnUser } from '../types/types.js';
 import { formatUserSocials, formatBadgePreviews, formatTrophies, formatGroupPreviews, truncateString } from './format.js';
 import { getAccentColorFromUrl, getRandomDefaultAvatarUrl } from './images.js';
@@ -177,11 +177,6 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
                 name: "Instructions",
                 value: `1. Navigate to your [sticknodes.com profile](https://sticknodes.com/members/${snUsername}/profile).\n2. Edit this key: **${key}** anywhere in your bio.\n3. Click "Verify Ownership" button below.\n4. Once verification is complete, you can remove the key from your bio.`,
                 inline: false
-            },
-            {
-                name: "For copying key on mobile",
-                value: key,
-                inline: false
             }
         )
         .setImage(`attachment://${imageName}`)
@@ -195,14 +190,10 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
 
     const row = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(verifyButton);
-    
-    const keyEmbed = new EmbedBuilder()
-        .setTitle(key)
-        .setColor(Color.NeutralBlue);
 
     const message = new MessageBuilder()
         .addFile(file)
-        .setEmbeds([embed, keyEmbed])
+        .setEmbeds([embed])
         .setContent('')
         .setComponents([row]);
 
@@ -210,6 +201,15 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
         messageBuilder: message,
         embedBuilder: embed
     }
+}
+
+export function getKeyReply(key: string) {
+    const reply: InteractionReplyOptions = {
+        content: key,
+        ephemeral: true
+    }
+
+    return reply;
 }
 
 async function getDemonbotEmbed(user: SnUser) {
@@ -235,7 +235,7 @@ export function getAlertEmbed(message: string) {
         .setColor(Color.TotalYellow);
 }
 
-export function getBasicEmbed(titleDescriptionColor: {title?: string, description?: string, color?: number}) {
+export function getBasicEmbed(titleDescriptionColor: { title?: string, description?: string, color?: number }) {
     const title = titleDescriptionColor.title ?? null;
     const description = titleDescriptionColor.description ?? null;
     const color = titleDescriptionColor.color ?? null;
@@ -260,25 +260,25 @@ export function getUnlockedColorsEmbed(member: GuildMember) {
 
     try {
         unlockedColorsString = '- ' + roleIdsToRoleMentions(Object.values(unlockedColors)).join('\n- ');
-    } catch {}
+    } catch { }
 
     try {
         lockedColorsString = '- ' + colorRoleIdsToRoleMentionsWithRequirements(lockedColors).join('\n- ');
-    } catch {}
-    
+    } catch { }
+
     return new EmbedBuilder()
-    .setFields(
-        {
-            name: "Unlocked Colors",
-            value: unlockedColorsString,
-            inline: false
-        },
-        {
-            name: "Locked Colors",
-            value: lockedColorsString,
-            inline: false
-        }
-    )
+        .setFields(
+            {
+                name: "Unlocked Colors",
+                value: unlockedColorsString,
+                inline: false
+            },
+            {
+                name: "Locked Colors",
+                value: lockedColorsString,
+                inline: false
+            }
+        )
 }
 
 export function getBirthdayEmbed(birthdayUsers: {

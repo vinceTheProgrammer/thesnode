@@ -1,6 +1,6 @@
 import { Command } from '@sapphire/framework';
 import { getSnUser } from '../utils/users.js';
-import { getLinkMessageAndEmbed, getLinkSuccessEmbed, getLinkUserConfirmationMessage, getUsernameHintMessageAndEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
+import { getKeyReply, getLinkMessageAndEmbed, getLinkSuccessEmbed, getLinkUserConfirmationMessage, getUsernameHintMessageAndEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
 import { CustomError, handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
 import { generateKey } from '../utils/strings.js';
@@ -55,6 +55,7 @@ export class PingCommand extends Command {
 
         const key = generateKey();
         const responseLinkVerify = await confirmation.update(getLinkMessageAndEmbed(key, interaction.user.id, username).messageBuilder);
+        await interaction.followUp(getKeyReply(key));
 
         try {
           const verification = await responseLinkVerify.awaitMessageComponent({ filter: collectorFilter, time: 840_000 });
