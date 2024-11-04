@@ -51,7 +51,7 @@ export const BADGE_TO_ROLE: Record<string, BadgeRole> = {
     "halloween-2022-winner": BadgeRole.Halloween2022Winner,
     "christmas-2020-winner": BadgeRole.Christmas2020Winner,
     "christmas-2021-winner": BadgeRole.Christmas2021Winner,
-    "merry-madness-winner": BadgeRole.MerryMadnessWinner,
+    "christmas-2022-winner": BadgeRole.MerryMadnessWinner,
     "treasure-trove-winner": BadgeRole.TreasureTroveWinner,
     "stick-idol-winner": BadgeRole.StickIdolWinner,
 };
