@@ -180,7 +180,7 @@ export function getLinkMessageAndEmbed(key: string, discordId: string, snUsernam
             }
         )
         .setImage(`attachment://${imageName}`)
-        .setFooter({ text: "This merely proves to TheSnode that you own this sticknodes.com account. It does not affect your Discord account or sticknodes.com account." })
+        .setFooter({ text: "This merely proves to DemonBot that you own this sticknodes.com account. It does not affect your Discord account or sticknodes.com account." })
         .setColor(Color.NeutralBlue);
 
     const verifyButton = new ButtonBuilder()
