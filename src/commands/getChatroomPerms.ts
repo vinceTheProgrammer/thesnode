@@ -4,7 +4,7 @@ import { CustomError, handleCommandError } from '../utils/errors.js';
 import { giveGroupPerms } from '../utils/roles.js';
 import { getBasicEmbed } from '../utils/embeds.js';
 import { Color } from '../constants/colors.js';
-import { HasAnySnBadgeRequirement, HasGroupMemberCountGENumber, OrRequirement, SticknodesMemberBeforeDateRequirement } from '../utils/requirements.js';
+import { HasAnySnBadge, HasGroupMemberCountGENumber, HasMessageCountGESinceDaysAgo, HasTotalMessageCountGENumber, OrRequirement, SticknodesMemberBeforeDate } from '../utils/requirements.js';
 import { getDateBefore } from '../utils/time.js';
 import { TimeUnit } from '../constants/time.js';
 import { ErrorMessage, ErrorType } from '../constants/errors.js';
@@ -39,13 +39,15 @@ export class GetChatroomPermsCommand extends Command {
       const alreadyHasGroupPerms = member.roles.cache.has(RoleId.GroupPerms);
       if (alreadyHasGroupPerms) return interaction.editReply({ content: '', embeds: [getBasicEmbed({ description: `You already have chatroom perms!`, color: Color.SuccessGreen })] });
 
-      const discordMemberBeforeDate = new SticknodesMemberBeforeDateRequirement(getDateBefore(6, TimeUnit.Months));
-      const hasAnyGoodRole = new HasAnySnBadgeRequirement();
+      const sticknodesMemberBeforeDate = new SticknodesMemberBeforeDate(getDateBefore(6, TimeUnit.Months));
+      const hasAnyGoodRole = new HasAnySnBadge();
+      const hasMessageCountGESinceDaysAgo = new HasMessageCountGESinceDaysAgo(500, 14);
       const hasGroupMemberCountGENumber = new HasGroupMemberCountGENumber(10);
 
       const complexRequirement = new OrRequirement(
         hasAnyGoodRole,
-        discordMemberBeforeDate,
+        sticknodesMemberBeforeDate,
+        hasMessageCountGESinceDaysAgo,
         hasGroupMemberCountGENumber
       );
 

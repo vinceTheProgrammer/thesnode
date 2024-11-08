@@ -1,7 +1,7 @@
 import type { GuildMember } from "discord.js";
 import { BadgeRole, GoodRoles } from "../constants/roles.js";
 import type { SnUser } from "../types/SnUser.js";
-import { findByDiscordId } from "./database.js";
+import { findByDiscordId, getUserMessageCountSinceDate } from "./database.js";
 import { getSnUser } from "./users.js";
 import { GroupManagement } from "../types/SnGroup.js";
 import { getSnGroup } from "./groups.js";
@@ -67,7 +67,7 @@ export class OrRequirement implements Requirement {
         }
         return {
             success: false,
-            message: `All OR requirements failed:\n${results.map(r => r.message).join('\n')}`,
+            message: `All OR requirements failed (you only need 1):\n${results.map(r => r.message).join('\n')}`,
         };
     }
 }
@@ -108,7 +108,71 @@ export class DiscordMemberBeforeDateRequirement implements Requirement {
     }
 }
 
-export class HasAnySnBadgeRequirement implements Requirement {
+export class HasMessageCountGESinceDaysAgo implements Requirement {
+    private minimumCount: number;
+    private daysAgo: number;
+
+    constructor(minimumCount: number, daysAgo: number) {
+        this.minimumCount = minimumCount;
+        this.daysAgo = daysAgo;
+    }
+
+    async evaluate(member: GuildMember, snUser?: SnUser): Promise<RequirementResult> {
+        const discordId = member.id;
+
+        const date = new Date();
+        date.setDate(date.getDate() - this.daysAgo);
+
+        const messageCount = await getUserMessageCountSinceDate(discordId, date);
+
+        if (messageCount >= this.minimumCount) {
+            return {
+                success: true,
+                message: `✅ User has sent ${messageCount} server messages since ${timeAgo(date)}, which is greater than or equal to ${this.minimumCount}.`
+            }
+        } else {
+            return {
+                success: false,
+                message: `❌ User has sent ${messageCount} server messages since ${timeAgo(date)}, which is not greater than or equal to ${this.minimumCount}.`
+            }
+        }
+    }
+}
+
+export class HasTotalMessageCountGENumber implements Requirement {
+    private minimumCount: number;
+
+    constructor(minimumCount: number) {
+        this.minimumCount = minimumCount;
+    }
+
+    async evaluate(member: GuildMember, snUser?: SnUser): Promise<RequirementResult> {
+        const discordId = member.id;
+
+        const userEntry = await findByDiscordId(discordId);
+
+        if (!userEntry) {
+            return {
+                success: false,
+                message: `❌ No user database entry found; please link your account or send a message to see this requirement.`
+            }
+        }
+
+        if (userEntry.messageCount >= this.minimumCount) {
+            return {
+                success: true,
+                message: `✅ User has a total Discord message count on the server of ${userEntry.messageCount}, which is greater than or equal to ${this.minimumCount}.`
+            }
+        }
+
+        return {
+            success: false,
+            message: `❌ User has a total Discord message count on the server of ${userEntry.messageCount}, which is not greater than or equal to ${this.minimumCount}.`
+        }
+    }
+}
+
+export class HasAnySnBadge implements Requirement {
     async evaluate(member: GuildMember): Promise<RequirementResult> {
         // Get an array of all badge role IDs directly from the BadgeRole enum
         const allBadgeRoles = Object.values(BadgeRole);
@@ -131,7 +195,7 @@ export class HasAnySnBadgeRequirement implements Requirement {
     }
 }
 
-export class SticknodesMemberBeforeDateRequirement implements Requirement {
+export class SticknodesMemberBeforeDate implements Requirement {
     private date: Date;
 
     constructor(date: Date) {
@@ -146,14 +210,14 @@ export class SticknodesMemberBeforeDateRequirement implements Requirement {
             if (!userDbEntry) {
                 return {
                     success: false,
-                    message: "❌ No linked sticknodes.com account found; please link your account to meet this requirement."
+                    message: "❌ No user database entry found; please link your account or send a message to see this requirement."
                 }
             }
             const snUsername = userDbEntry.snUsername;
             if (!snUsername) {
                 return {
                     success: false,
-                    message: "❌ No linked sticknodes.com account found; please link your account to meet this requirement."
+                    message: "❌ No linked sticknodes.com account found; please link your account to see this requirement."
                 }
             }
             const _snUser = await getSnUser(snUsername);
@@ -185,14 +249,14 @@ export class HasGroupMemberCountGENumber implements Requirement {
             if (!userDbEntry) {
                 return {
                     success: false,
-                    message: "❌ No linked sticknodes.com account found; please link your account to meet this requirement."
+                    message: "❌ No user database entry found; please link your account or send a message to see this requirement."
                 }
             }
             const snUsername = userDbEntry.snUsername;
             if (!snUsername) {
                 return {
                     success: false,
-                    message: "❌ No linked sticknodes.com account found; please link your account to meet this requirement."
+                    message: "❌ No linked sticknodes.com account found; please link your account to see this requirement."
                 }
             }
            snUser = await getSnUser(snUsername);

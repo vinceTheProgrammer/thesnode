@@ -14,5 +14,12 @@ model User {
   discordId String  @id
   snUsername  String? @unique
   birthday DateTime?
+  messageCount Int @default(0)
   createdAt DateTime @default(now())
+}
+
+model Message {
+  id Int @id @default(autoincrement())
+  discordId String
+  timestamp DateTime @default(now())
 }
