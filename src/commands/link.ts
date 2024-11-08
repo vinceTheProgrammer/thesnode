@@ -6,7 +6,7 @@ import { ErrorType } from '../constants/errors.js';
 import { generateKey } from '../utils/strings.js';
 import { findBySnUsername, linkUser, unlinkUser } from '../utils/database.js';
 import { syncBadgeRoles } from '../utils/roles.js';
-import { checkBirthdayIsWithinTos } from '../utils/moderation.js';
+import { checkBirthdayIsWithinTos, checkIfUserIsBanned } from '../utils/moderation.js';
 
 
 export class PingCommand extends Command {
@@ -44,6 +44,8 @@ export class PingCommand extends Command {
         msgAndEmbed.messageBuilder.setEmbeds([userNotFoundEmbed, helpEmbed]);
         return await interaction.editReply(msgAndEmbed.messageBuilder);
       }
+
+      checkIfUserIsBanned(user, interaction.user);
 
       const stillLinkedId = (await findBySnUsername(username).catch(error => { throw error }))?.discordId;
 
