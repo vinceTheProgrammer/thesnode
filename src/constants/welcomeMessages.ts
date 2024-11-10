@@ -6,5 +6,5 @@ export const welcomeVariants = [
 ];
 
 export const welcomeGifs = [
-    'https://tenor.com/view/yakuza-ps3-gif-door-gif-7633523',
+    'yakuza-ps3_sd.gif',
 ];
