@@ -36,7 +36,7 @@ export class GuildMemberUpdate extends Listener {
         .setAllowedMentions({parse: []})
 
         channel.send(gifMessage).then(message => {
-            createNoticesThread(message);
+            createNoticesThread(message, `Welcome ${newMember.user.displayName}`);
         });
     }
 }

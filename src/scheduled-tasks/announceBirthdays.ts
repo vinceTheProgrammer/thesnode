@@ -20,7 +20,9 @@ export class AnnounceBirthdaysTask extends ScheduledTask {
 			if (birthdayUsers.length == 0) return;
 			const birthdayEmbed = getBirthdayEmbed(birthdayUsers);
 			const msg = await sendEmbed(ChannelId.BirthdayAnnounce, birthdayEmbed);
-			if (msg) createNoticesThread(msg);
+      let birthdayDisplayname = ''; 
+      if (birthdayUsers.length === 1 && birthdayUsers[0]) birthdayDisplayname = (await this.container.client.users.fetch(birthdayUsers[0].discordId)).displayName;
+			if (msg) createNoticesThread(msg, `Happy birthday, ${birthdayUsers.length > 1 ? `${birthdayUsers.length} users` : `${birthdayDisplayname}`}`);
 			const emoji = getReactionEmoji(birthdayEmbed.data.description ?? '');
 			msg?.react(emoji)
 		} catch (error) {
