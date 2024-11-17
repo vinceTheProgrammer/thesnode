@@ -132,11 +132,15 @@ export function getErrorEmbed(error: string) {
         .setColor(Color.TotalRed)
 }
 
-export function getWarningEmbed(warning: string) {
-    return new EmbedBuilder()
+export function getWarningEmbed(warning: string, footer?: string) {
+    const embed = new EmbedBuilder()
         .setTitle("Notice")
         .setDescription(`${warning}`)
         .setColor(Color.TotalYellow)
+  
+    if (footer) embed.setFooter({text: footer});
+
+    return embed;
 }
 
 interface MessageAndEmbed {

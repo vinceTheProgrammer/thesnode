@@ -6,12 +6,14 @@ import { ErrorType } from "../constants/errors.js";
 export class CustomError extends Error {
     originalError: Error | null;
     errorType: ErrorType;
+    footer: string | undefined;
 
-    constructor(message: string, errorType: ErrorType, originalError: Error | null = null) {
+    constructor(message: string, errorType: ErrorType, originalError: Error | null = null, footer?: string) {
         super(message); // Set the custom message.
         this.name = "CustomSnodeError"; // Optional: set a specific name.
         this.originalError = originalError;
         this.errorType = errorType;
+        this.footer = footer;
 
         // Ensure the prototype chain is properly set.
         Object.setPrototypeOf(this, new.target.prototype);
@@ -27,7 +29,7 @@ export function handleCommandError(
             case ErrorType.Error:
                 return interaction.editReply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: []});
             case ErrorType.Warning:
-                return interaction.editReply({ content: '', embeds: [getWarningEmbed(error.message)], components: [], files: [] });
+                return interaction.editReply({ content: '', embeds: [getWarningEmbed(error.message, error.footer)], components: [], files: [] });
             default:
                 return interaction.editReply({ content: '', embeds: [getErrorEmbed(error.message)], components: [], files: [] });
         }

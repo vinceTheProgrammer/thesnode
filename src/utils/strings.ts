@@ -1,6 +1,6 @@
 import TurndownService from 'turndown';
 import { decode } from 'html-entities';
-import { BadgeRole, ColorToBadgeMap, type ColorRole } from '../constants/roles.js';
+import { BadgeRole, ColorToRoleIdMap, type ColorRole } from '../constants/roles.js';
 import { CustomError } from './errors.js';
 import { ErrorType } from '../constants/errors.js';
 
@@ -44,7 +44,7 @@ export function colorRoleIdsToRoleMentionsWithRequirements(colors: ColorRole[]) 
 
         let requiredRolesString = '???';
 
-        const requiredRoles = ColorToBadgeMap[color];
+        const requiredRoles = ColorToRoleIdMap[color];
 
         if (requiredRoles.length > 0) {
             const badgeRoleKey = Object.keys(BadgeRole).find(key => BadgeRole[key as keyof typeof BadgeRole] === requiredRoles[0]);

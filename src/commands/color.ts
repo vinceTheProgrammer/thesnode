@@ -2,9 +2,10 @@ import { Command } from '@sapphire/framework';
 import { ColorRole } from '../constants/roles.js';
 import { formatEnumNameCapitalSpaced } from '../utils/strings.js';
 import { CustomError, handleCommandError } from '../utils/errors.js';
-import { changeMemberSelectedColor, getUnlockedColors } from '../utils/roles.js';
+import { changeMemberSelectedColor, getUnlockedColors, unsetMemberColor } from '../utils/roles.js';
 import { getBasicEmbed, getUnlockedColorsEmbed } from '../utils/embeds.js';
 import { ErrorType } from '../constants/errors.js';
+import { Color } from '../constants/colors.js';
 
 export class ColorCommand extends Command {
     public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -20,11 +21,16 @@ export class ColorCommand extends Command {
                     return option
                         .setName('color')
                         .setDescription('The color role you want')
-                        .setChoices(
-                            Object.entries(ColorRole).map(([name, value]) => ({
-                                name: formatEnumNameCapitalSpaced(name),
-                                value: name
-                            }))
+                        .setChoices([
+                                ...Object.entries(ColorRole).map(([name, value]) => ({
+                                    name: formatEnumNameCapitalSpaced(name),
+                                    value: name
+                                })), 
+                                {
+                                    name: "None",
+                                    value: "None"
+                                }
+                            ]
                         )
                         .setRequired(false)
                 })
@@ -43,15 +49,20 @@ export class ColorCommand extends Command {
             const selectedColor = interaction.options.getString('color');
             if (selectedColor == null) return interaction.editReply({ content: '', embeds: [getUnlockedColorsEmbed(member)] })
 
+            if (selectedColor.toLowerCase() == 'none') {
+                await unsetMemberColor(member);
+                return interaction.editReply({content: '', embeds: [getBasicEmbed({description: `Successfully unset your color.`, color: Color.SuccessGreen})]});
+            }
+
             const unlockedColors = getUnlockedColors(member);
-            if (unlockedColors.length === 0) throw new CustomError("You do not have any colors unlocked.", ErrorType.Warning);
+            if (unlockedColors.length === 0) throw new CustomError("You do not have any colors unlocked.", ErrorType.Warning, undefined, "💡 Use /color without any arguments to see requirements.");
 
             const selectedColorRole = ColorRole[selectedColor as keyof typeof ColorRole];
             if (selectedColorRole == undefined) throw new CustomError(`"${selectedColor}" could not be converted to a ColorRole.`, ErrorType.Error);
 
             const memberMeetsRequirementForColor = unlockedColors.includes(ColorRole[selectedColor as keyof typeof ColorRole]);
 
-            if (!memberMeetsRequirementForColor) throw new CustomError(`You have not unlocked ${formatEnumNameCapitalSpaced(selectedColor)}`, ErrorType.Warning);
+            if (!memberMeetsRequirementForColor) throw new CustomError(`You have not unlocked ${formatEnumNameCapitalSpaced(selectedColor)}`, ErrorType.Warning, undefined, "💡 Use /color without any arguments to see requirements.");
 
             const role = await changeMemberSelectedColor(member, selectedColorRole);
 
