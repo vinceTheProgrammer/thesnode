@@ -128,12 +128,12 @@ export class HasMessageCountGESinceDaysAgo implements Requirement {
         if (messageCount >= this.minimumCount) {
             return {
                 success: true,
-                message: `✅ User has sent ${messageCount} server messages since ${timeAgo(date)}, which is greater than or equal to ${this.minimumCount}.`
+                message: `✅ User meets the server activity requirement.`
             }
         } else {
             return {
                 success: false,
-                message: `❌ User has sent ${messageCount} server messages since ${timeAgo(date)}, which is not greater than or equal to ${this.minimumCount}.`
+                message: `❌ User does not meet the server activity requirement.`
             }
         }
     }
