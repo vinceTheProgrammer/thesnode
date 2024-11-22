@@ -5,7 +5,7 @@ import { CustomError, handleCommandError } from '../utils/errors.js';
 import { ErrorType } from '../constants/errors.js';
 import { generateKey } from '../utils/strings.js';
 import { findBySnUsername, linkUser, unlinkUser } from '../utils/database.js';
-import { syncBadgeRoles } from '../utils/roles.js';
+import { clearBadgeRoles, giveLinkedRole, removeLinkedRole, syncBadgeRoles } from '../utils/roles.js';
 import { checkBirthdayIsWithinTos, checkIfUserIsBanned } from '../utils/moderation.js';
 
 
@@ -67,13 +67,25 @@ export class PingCommand extends Command {
           const keyPresent = bio.includes(key);
 
           if (keyPresent) {
-            if (stillLinkedId) await unlinkUser(stillLinkedId).catch(error => { throw error });
+
+            if (stillLinkedId) {
+              await unlinkUser(stillLinkedId).catch(error => { throw error });
+              if (interaction.guild) {
+                const member = await interaction.guild.members.fetch(stillLinkedId).catch(err => {console.log(err)});
+                if (member) {
+                  removeLinkedRole(member).catch(err => {console.log(err)});
+                  clearBadgeRoles(member).catch(err => {console.log(err)});
+                }
+              }
+            }
 
             await linkUser(interaction.user.id, username, nonStaleUser.socials.birthday).catch(error => { throw error });
-
             if (interaction.guild) {
               const member = await interaction.guild.members.fetch(interaction.user.id).catch(err => {console.log(err)});
-              if (member) syncBadgeRoles(member, user).catch(err => {console.log(err)});
+              if (member) {
+                giveLinkedRole(member).catch(err => {console.log(err)});
+                syncBadgeRoles(member, user).catch(err => {console.log(err)});
+              }
             }
 
             checkBirthdayIsWithinTos(nonStaleUser, interaction.user);

@@ -93,7 +93,8 @@ export const ColorToRoleIdMap: Record<ColorRole, string[]> = {
 }
 
 export enum RoleId {
-    GroupPerms = '1300984956813836390'
+    GroupPerms = '1300984956813836390',
+    Linked = '1309276982047019061'
 }
 
 export const GoodRoles : string[] = [

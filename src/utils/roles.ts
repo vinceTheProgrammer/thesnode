@@ -1,4 +1,4 @@
-import { GuildMember, Role } from "discord.js";
+import { GuildMember } from "discord.js";
 import type { SnUser } from "../types/types.js";
 import { BADGE_TO_ROLE, BadgeRole, ColorRole, ColorToRoleIdMap, RoleId } from "../constants/roles.js";
 import { CustomError } from "./errors.js";
@@ -28,6 +28,36 @@ export async function syncBadgeRoles(discordMember: GuildMember, snUser: SnUser)
 
     } catch (error) {
         throw new CustomError(`Failed to sync roles for ${snUser.username}:`, ErrorType.Error, error as Error);
+    }
+}
+
+export async function clearBadgeRoles(discordMember: GuildMember) {
+    const memberRoles = new Set(discordMember.roles.cache.keys());
+    const rolesToRemove = [...memberRoles].filter(role => (Object.values(BadgeRole) as string[]).includes(role));
+
+    try {
+        if (rolesToRemove.length > 0) {
+            await discordMember.roles.remove(rolesToRemove);
+        }
+    } catch (error) {
+        throw new CustomError(`Failed to clear badge roles for <@${discordMember.id}>:`, ErrorType.Error, error as Error);
+    }
+}
+
+export async function removeLinkedRole(discordMember: GuildMember) {
+    try {
+        await discordMember.roles.remove(RoleId.Linked);
+    } catch (error) {
+        throw new CustomError(`Failed to remove "Linked" role for <@${discordMember.id}>`, ErrorType.Error, error as Error);
+    }
+}
+
+export async function giveLinkedRole(discordMember: GuildMember) {
+    try {
+        await discordMember.roles.add(RoleId.Linked);
+        console.log(`added linked to ${discordMember.user.username}`);
+    } catch (error) {
+        throw new CustomError(`Failed to give "Linked" role to <@${discordMember.id}>`, ErrorType.Error, error as Error);
     }
 }
 
