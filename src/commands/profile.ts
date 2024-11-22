@@ -1,10 +1,7 @@
 import { Command } from '@sapphire/framework';
-import { EmbedBuilder, ApplicationCommandType } from 'discord.js';
-import type { User, ContextMenuCommandType, GuildMember } from 'discord.js';
-import { getSnUser } from '../utils/users.js';
-import { getErrorEmbed, getNoUserLinkedEmbed, getUserEmbed, getUserNotFoundEmbed } from '../utils/embeds.js';
-import { CustomError, handleCommandError } from '../utils/errors.js';
-import { findByDiscordIdWhereSnUsernameNotNull, findBySnUsername } from '../utils/database.js';
+import { ApplicationCommandType } from 'discord.js';
+import type { ContextMenuCommandType } from 'discord.js';
+import { handleSnUserByDiscordIdInteraction, handleSnUserUsernameInteraction } from '../utils/interactions.js';
 
 export class ProfileCommand extends Command {
   public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -16,11 +13,17 @@ export class ProfileCommand extends Command {
       builder
         .setName('profile')
         .setDescription('View someone\'s sticknodes.com profile')
+        .addUserOption(option => {
+          return option
+            .setName('discord-user')
+            .setDescription("Some Discord user")
+            .setRequired(false)
+        })
         .addStringOption(option => {
           return option
-            .setName('username')
-            .setDescription("Your sticknodes.com username")
-            .setRequired(true)
+            .setName('sn-username')
+            .setDescription("Someone's sticknodes.com username")
+            .setRequired(false)
         })
         .addBooleanOption(option => {
           return option
@@ -46,61 +49,21 @@ export class ProfileCommand extends Command {
   }
 
   public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-    try {
-      const visible = interaction.options.getBoolean('visible-to-all') ?? false;
-      
-      const bypassCache = interaction.options.getBoolean('bypass-cache') ?? false;
+    const visible = interaction.options.getBoolean('visible-to-all') ?? false;
+    const bypassCache = interaction.options.getBoolean('bypass-cache') ?? false;
+    const discordUserParameter = interaction.options.getUser('discord-user');
+    let username = interaction.options.getString('sn-username') ?? '';
 
-      const username = interaction.options.getString('username') ?? '';
-
-      await interaction.reply({ content: `Searching for user **${username}**...`, ephemeral: !visible });
-
-      const user = await getSnUser(username, bypassCache);
-
-      if (user.id === 0) {
-        return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(username)] });
-      }
-
-      const linkedDiscordId = (await findBySnUsername(username).catch(error => { throw error }))?.discordId ?? null;
-
-      let linkedDiscordMember: GuildMember | null = null;
-
-      if (linkedDiscordId && interaction.guild) linkedDiscordMember = (await interaction.guild.members.fetch(linkedDiscordId).catch(err => {console.log(err)})) ?? null;
-
-      const embed = await getUserEmbed(user, linkedDiscordMember);
-
-      return await interaction.editReply({ content: "", embeds: [embed] });
-    } catch (error) {
-      handleCommandError(interaction, error);
+    if (discordUserParameter) {
+      handleSnUserByDiscordIdInteraction(interaction, discordUserParameter.id, visible, bypassCache);
+    } else if (!discordUserParameter && username) {
+      handleSnUserUsernameInteraction(interaction, username, visible, bypassCache);
+    } else {
+      handleSnUserByDiscordIdInteraction(interaction, interaction.user.id, visible, bypassCache);
     }
   }
 
   public override async contextMenuRun(interaction: Command.ContextMenuCommandInteraction) {
-    try {
-      await interaction.reply({ content: `Checking for linked sn account...`, ephemeral: true });
-      const linkedSnUsername = (await findByDiscordIdWhereSnUsernameNotNull(interaction.targetId).catch(error => { throw error }))?.snUsername;
-
-      if (linkedSnUsername) {
-        const user = await getSnUser(linkedSnUsername);
-
-        if (user.id === 0) {
-          return await interaction.editReply({ content: "", embeds: [getUserNotFoundEmbed(linkedSnUsername)] });
-        }
-
-        const linkedDiscordId = interaction.targetId;
-
-        let linkedDiscordMember: GuildMember | null = null;
-
-        if (linkedDiscordId && interaction.guild) linkedDiscordMember = (await interaction.guild.members.fetch(linkedDiscordId).catch(err => {console.log(err)})) ?? null;
-
-        const embed = await getUserEmbed(user, linkedDiscordMember);
-
-        return await interaction.editReply({ content: "", embeds: [embed] });
-      } else {
-        return await interaction.editReply({ content: "", embeds: [getNoUserLinkedEmbed(interaction.targetId)] });
-      }
-    } catch (error) {
-      handleCommandError(interaction, error);
-    }
+    handleSnUserByDiscordIdInteraction(interaction, interaction.targetId, false, false);
   }
 }

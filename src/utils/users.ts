@@ -1,4 +1,4 @@
-import type { SnGroupPreview, SnUser } from '../types/types.js';
+import type { SnUser } from '../types/types.js';
 import { DEFAULT_USER } from '../constants/defaults.js';
 import { getSnUserStatsFromHtml, getSnUserSocialsFromHtml, updateSnUserBasicDataFromHtml, getSnUserManagedGroupsFromHtml, getSnUserTrophiesFromHtml, getSnUserBadgesFromHtml, getSnUserAdminCountFromManagedGroups, getSnUserModCountFromManagedGroups, getSnUserOwnerCountFromManagedGroups } from './webscraping.js'
 import { CustomError } from './errors.js';
