@@ -6,6 +6,5 @@ export async function createNoticesThread(message: Message, name: string) {
         rateLimitPerUser: 15,
         reason: "DemonBot auto thread"
     }
-    console.log("test");
     message.startThread(options);
 }

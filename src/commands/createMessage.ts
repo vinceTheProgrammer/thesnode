@@ -103,8 +103,6 @@ export class CreateMessageCommand extends Command {
                 (tag) => tag.name.toLowerCase() === tagName?.toLowerCase()
             );
 
-            console.log(selectedTag);
-
             // If tags are required and the user didn't provide a valid tag, send an error
             if (requiresTag && !selectedTag) {
                 return interaction.reply({
