@@ -44,7 +44,8 @@ export class CreateMessageCommand extends Command {
                         .setName('files')
                         .setDescription('New file(s) to attach to the message.')
                         .setRequired(false)
-                )
+                ),
+                { idHints: ['1309806193740353556'] }
         );
     }
 

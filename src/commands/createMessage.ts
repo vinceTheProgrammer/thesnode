@@ -42,7 +42,8 @@ export class CreateMessageCommand extends Command {
                         .setName('post-tag')
                         .setDescription('The tag for the forum post (only for forum channels)')
                         .setRequired(false)
-                )
+                ),
+                { idHints: ['1309806191735603261'] }
         );
     }
 
