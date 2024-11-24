@@ -1,5 +1,5 @@
 import { Command } from '@sapphire/framework';
-import { ApplicationCommandOptionType, ChannelType, type TextBasedChannel, ForumChannel, AttachmentBuilder, ChannelFlags } from 'discord.js';
+import { ChannelType, ForumChannel, AttachmentBuilder, ChannelFlags } from 'discord.js';
 
 export class CreateMessageCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
