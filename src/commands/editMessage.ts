@@ -7,6 +7,7 @@ export class EditMessageCommand extends Command {
             ...options,
             name: 'edit-message',
             description: 'Edits an existing message.',
+            preconditions: ['StaffOnly']
         });
     }
 

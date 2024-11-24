@@ -55,7 +55,6 @@ export async function removeLinkedRole(discordMember: GuildMember) {
 export async function giveLinkedRole(discordMember: GuildMember) {
     try {
         await discordMember.roles.add(RoleId.Linked);
-        console.log(`added linked to ${discordMember.user.username}`);
     } catch (error) {
         throw new CustomError(`Failed to give "Linked" role to <@${discordMember.id}>`, ErrorType.Error, error as Error);
     }
