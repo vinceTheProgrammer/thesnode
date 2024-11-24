@@ -16,7 +16,7 @@ export class StarsCommand extends Command {
           builder
             .setName(this.name)
             .setDescription(this.description),
-          //{ idHints: ['1295453491338154067'] }
+          { idHints: ['1310154330627903509'] }
         );
       }
 
