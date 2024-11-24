@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { AttachmentBuilder, EmbedBuilder, type Client, type GuildMember, type PartialGuildMember } from 'discord.js';
+import { AttachmentBuilder, type Client, type GuildMember, type PartialGuildMember } from 'discord.js';
 import { ChannelId } from '../constants/channels.js';
 import { welcomeGifs, welcomeVariants } from '../constants/welcomeMessages.js';
 import { createNoticesThread } from '../utils/threads.js';
@@ -30,14 +30,9 @@ export class GuildMemberUpdate extends Listener {
         if (!welcomeGif) return;
 
         const file = new AttachmentBuilder(getImagePath(welcomeGif));
-
-        const embed = new EmbedBuilder()
-        .setDescription(welcomeMessage)
-        .setImage(`attachment://${welcomeGif}`)
-
         const gifMessage = new MessageBuilder()
         .addFile(file)
-        .setEmbeds([embed])
+        .setContent(welcomeMessage)
         .setAllowedMentions({parse: []})
 
         channel.send(gifMessage).then(message => {
