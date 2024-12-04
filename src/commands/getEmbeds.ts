@@ -25,7 +25,7 @@ export class CreateMessageCommand extends Command {
                         .setDescription('The link to the Discord message.')
                         .setRequired(true)
                 ),
-                //{ idHints: ['1309806191735603261'] }
+                { idHints: ['1313809722637418508'] }
         );
     }
 
