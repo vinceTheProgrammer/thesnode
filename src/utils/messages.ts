@@ -1,4 +1,4 @@
-import { EmbedBuilder, TextChannel, type Embed, type MessagePayload } from "discord.js";
+import { EmbedBuilder, Message, TextChannel, type Embed, type MessagePayload, type TextBasedChannel } from "discord.js";
 import { container } from '@sapphire/framework';
 import { MessageBuilder } from "@sapphire/discord.js-utilities";
 import { getAlertEmbed } from "./embeds.js";
@@ -17,4 +17,18 @@ export async function sendEmbed(channelId: string, embedBuilder: EmbedBuilder) {
     let messageBuilder = new MessageBuilder()
     .setEmbeds([embedBuilder]);
     return await channel.send(messageBuilder);
+}
+
+export async function validateMessage(channel: TextBasedChannel, messageId: string): Promise<Message> {
+    const message = await channel.messages.fetch(messageId);
+
+    if (!message) {
+        throw new Error('Message not found. Please provide a valid message ID.');
+    }
+
+    if (!message.editable) {
+        throw new Error('This message cannot be edited.');
+    }
+
+    return message;
 }

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, type ColorResolvable, type InteractionReplyOptions } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, type APIEmbed, type ColorResolvable, type InteractionReplyOptions } from 'discord.js';
 import type { SnUser } from '../types/types.js';
 import { formatUserSocials, formatBadgePreviews, formatTrophies, formatGroupPreviews, truncateString } from './format.js';
 import { getAccentColorFromUrl, getRandomDefaultAvatarUrl } from './images.js';
@@ -127,7 +127,7 @@ export function getLinkUserConfirmationMessage(user: SnUser, stillLinkedId: stri
 
 export function getErrorEmbed(error: string) {
     return new EmbedBuilder()
-        .setTitle("😔 Error encountered. Please tell vincetheanimator")
+        .setTitle("😔 Error encountered.")
         .setDescription(`Error message: ${error}`)
         .setColor(Color.TotalRed)
 }
@@ -310,5 +310,43 @@ export function getBirthdayEmbed(birthdayUsers: {
             .setColor('#ff00ff');
     } catch (error) {
         throw error;
+    }
+}
+
+export function parseEmbeds(rawEmbeds: string | undefined): APIEmbed[] | undefined {
+    if (!rawEmbeds) return undefined;
+
+    const convertHexToInt = (hex: string) => parseInt(hex.replace(/^#/, ''), 16);
+    const isEpochTime = (value: number) => value.toString().length >= 10 && value.toString().length <= 13;
+
+    try {
+        const parsed = JSON.parse(rawEmbeds);
+        const embedArray = Array.isArray(parsed) ? parsed : [parsed];
+
+        return embedArray.map((embed: any) => {
+            if (embed.color) {
+                if (typeof embed.color === 'string' && embed.color.startsWith('#')) {
+                    embed.color = convertHexToInt(embed.color);
+                } else if (typeof embed.color !== 'number') {
+                    throw new Error('Invalid color format. Use a hex string (e.g., #FF5733) or an integer.');
+                }
+            }
+
+            if (embed.timestamp) {
+                if (typeof embed.timestamp === 'number' && isEpochTime(embed.timestamp)) {
+                    embed.timestamp = new Date(embed.timestamp).toISOString();
+                } else if (typeof embed.timestamp === 'string') {
+                    embed.timestamp = new Date(embed.timestamp).toISOString();
+                } else {
+                    throw new Error('Invalid timestamp format. Use a valid Epoch time or ISO8601 string.');
+                }
+            }
+
+            return embed;
+        });
+    } catch (error) {
+        let err = null;
+        if (error instanceof Error) err = error;
+        throw new CustomError(`Invalid embed JSON provided.`, ErrorType.Error, err);
     }
 }

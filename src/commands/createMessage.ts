@@ -1,5 +1,10 @@
 import { Command } from '@sapphire/framework';
 import { ChannelType, ForumChannel, AttachmentBuilder, ChannelFlags } from 'discord.js';
+import { CustomError, handleCommandError } from '../utils/errors.js';
+import { ErrorType } from '../constants/errors.js';
+import { parseEmbeds } from '../utils/embeds.js';
+import { getAttachments } from '../utils/attachments.js';
+import { parseComponents } from '../utils/components.js';
 
 export class CreateMessageCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -29,6 +34,12 @@ export class CreateMessageCommand extends Command {
                 .addStringOption((option) =>
                     option.setName('embeds').setDescription('JSON stringified embed(s) array').setRequired(false)
                 )
+                .addStringOption((option) =>
+                    option
+                        .setName('components')
+                        .setDescription('Components for the message (e.g., buttons) in JSON format.')
+                        .setRequired(false)
+                )
                 .addAttachmentOption((option) =>
                     option.setName('files').setDescription('Attach file(s) to the message').setRequired(false)
                 )
@@ -52,116 +63,60 @@ export class CreateMessageCommand extends Command {
         const channel = interaction.options.getChannel('channel', true);
         const content = interaction.options.getString('content') ?? undefined;
         const rawEmbeds = interaction.options.getString('embeds');
+        const rawComponents = interaction.options.getString('components') ?? undefined;
         const postTitle = interaction.options.getString('post-title');
         const tagName = interaction.options.getString('post-tag'); // Tag provided by the user
         const fileAttachment = interaction.options.getAttachment('files');
 
-        // Helper functions for color and timestamp conversion
-        const convertHexToInt = (hex: string) => parseInt(hex.replace(/^#/, ''), 16);
-        const convertEpochToISO8601 = (epoch: number) => new Date(epoch).toISOString();
+        const isForumChannel = channel.type === ChannelType.GuildForum;
+        const isSendableChannel = channel.type === ChannelType.GuildText || channel.type === ChannelType.GuildAnnouncement || channel.type === ChannelType.PublicThread || channel.type === ChannelType.PrivateThread;
 
-        // Parse embeds if provided
-        let embeds;
-        if (rawEmbeds) {
-            try {
-                const parsed = JSON.parse(rawEmbeds);
-                const embedArray = Array.isArray(parsed) ? parsed : [parsed];
+        try {
+            await interaction.deferReply({ephemeral: true});
 
-                embeds = embedArray.map((embed: any) => {
-                    if (embed.color && typeof embed.color === 'string') {
-                        embed.color = convertHexToInt(embed.color);
-                    }
-                    if (embed.timestamp && typeof embed.timestamp === 'number') {
-                        embed.timestamp = convertEpochToISO8601(embed.timestamp);
-                    }
-                    return embed;
-                });
-            } catch (error) {
-                return interaction.reply({
-                    content: 'Invalid embed JSON provided. Please ensure it is properly formatted.',
-                    ephemeral: true,
-                });
-            }
-        }
+            const embeds = rawEmbeds ? parseEmbeds(rawEmbeds) : [];
+            const components = parseComponents(rawComponents);
+            const files = getAttachments(fileAttachment);
 
-        const files = fileAttachment ? [new AttachmentBuilder(fileAttachment.url)] : undefined;
+            if (isForumChannel) {
+                if (!postTitle) throw new CustomError('A title is required for creating posts in forum channels.', ErrorType.Error);
+                const forumChannel = channel as ForumChannel;
 
-        if (channel.type === ChannelType.GuildForum) {
-            if (!postTitle) {
-                return interaction.reply({
-                    content: 'A title is required for creating posts in forum channels.',
-                    ephemeral: true,
-                });
-            }
+                // Check if tags are required in this forum channel
+                const requiresTag = forumChannel.flags.has(ChannelFlags.RequireTag);
 
-            const forumChannel = channel as ForumChannel;
+                // Find the tag provided by the user (if any)
+                const selectedTag = forumChannel.availableTags.find((tag) => tag.name.toLowerCase() === tagName?.toLowerCase());
 
-            // Check if tags are required in this forum channel
-            const requiresTag = forumChannel.flags.has(ChannelFlags.RequireTag);
+                // If tags are required and the user didn't provide a valid tag, send an error
+                if (requiresTag && !selectedTag) {
+                    const availableTags = forumChannel.availableTags.map((tag) => `\`${tag.name}\``).join(', ');
+                    throw new CustomError(`This forum channel requires a tag to create a post. Please specify a valid tag from the following options: ${availableTags}`, ErrorType.Error);
+                }
 
-            // Find the tag provided by the user (if any)
-            const selectedTag = forumChannel.availableTags.find(
-                (tag) => tag.name.toLowerCase() === tagName?.toLowerCase()
-            );
-
-            // If tags are required and the user didn't provide a valid tag, send an error
-            if (requiresTag && !selectedTag) {
-                return interaction.reply({
-                    content: `This forum channel requires a tag to create a post. Please specify a valid tag from the following options: ${forumChannel.availableTags
-                        .map((tag) => `\`${tag.name}\``)
-                        .join(', ')}`,
-                    ephemeral: true,
-                });
-            }
-
-            try {
-                // Create the post with the selected tag (if provided)
                 await forumChannel.threads.create({
                     name: postTitle,
                     message: {
                         content,
                         embeds,
                         files,
+                        components
                     },
                     appliedTags: selectedTag ? [selectedTag.id] : [],
                 });
 
-                return interaction.reply({ content: `Post created in ${channel.name}.`, ephemeral: true });
-            } catch (error) {
-                console.error(error);
-                return interaction.reply({
-                    content: 'Failed to create a post in the forum channel. Please check the details and try again.',
-                    ephemeral: true,
-                });
-            }
-        } else if (
-            channel.type === ChannelType.GuildText || 
-            channel.type === ChannelType.GuildAnnouncement || 
-            channel.type === ChannelType.PublicThread || 
-            channel.type === ChannelType.PrivateThread
-        ) {
-            try {
+                return interaction.editReply({ content: `Post created in ${channel.name}.`});
+
+            } else if (isSendableChannel) {
                 // Cast channel to a sendable type
-                const textChannel = channel as Extract<
-                    typeof channel,
-                    { send: (options: any) => Promise<any> }
-                >;
-    
-                await textChannel.send({ content, embeds, files });
-                return interaction.reply({ content: `Message sent to ${channel.name}.`, ephemeral: true });
-            } catch (error) {
-                console.error(error);
-                return interaction.reply({
-                    content: 'Failed to send the message. Please check the details and try again.',
-                    ephemeral: true,
-                });
+                const textChannel = channel as Extract<typeof channel,{ send: (options: any) => Promise<any> }>;
+                await textChannel.send({ content, embeds, files, components });
+                return interaction.editReply({ content: `Message sent to ${channel.name}.`});
+            } else {
+                throw new CustomError('Unhandled channel type.', ErrorType.Error);
             }
-        } else {
-            return interaction.reply({
-                content: 'This command is designed to work in forum channels.',
-                ephemeral: true,
-            });
+        } catch (error) {
+            handleCommandError(interaction, error);
         }
     }
-
 }

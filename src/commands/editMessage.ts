@@ -1,5 +1,11 @@
 import { Command } from '@sapphire/framework';
 import { ChannelType, type TextBasedChannel, AttachmentBuilder } from 'discord.js';
+import { CustomError, handleCommandError } from '../utils/errors.js';
+import { getAttachments } from '../utils/attachments.js';
+import { parseEmbeds } from '../utils/embeds.js';
+import { ErrorType } from '../constants/errors.js';
+import { validateMessage } from '../utils/messages.js';
+import { parseComponents } from '../utils/components.js';
 
 export class EditMessageCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -40,6 +46,12 @@ export class EditMessageCommand extends Command {
                         .setDescription('The new embeds for the message in JSON format.')
                         .setRequired(false)
                 )
+                .addStringOption((option) =>
+                    option
+                        .setName('components')
+                        .setDescription('Components for the message (e.g., buttons) in JSON format.')
+                        .setRequired(false)
+                )
                 .addAttachmentOption((option) =>
                     option
                         .setName('files')
@@ -55,85 +67,64 @@ export class EditMessageCommand extends Command {
         const messageId = interaction.options.getString('message-id', true); // Message ID to edit
         const content = interaction.options.getString('content') ?? undefined;
         const rawEmbeds = interaction.options.getString('embeds');
+        const rawComponents = interaction.options.getString('components') ?? undefined;
         const fileAttachment = interaction.options.getAttachment('files');
+        const isDestructive = interaction.options.getBoolean('is-destructive') ?? false;
 
-        // Helper functions for color and timestamp conversion
-        const convertHexToInt = (hex: string) => parseInt(hex.replace(/^#/, ''), 16);
-        const convertEpochToISO8601 = (epoch: number) => new Date(epoch).toISOString();
+        const isSendableChannel = channel.type === ChannelType.GuildText || channel.type === ChannelType.GuildAnnouncement || channel.type === ChannelType.PublicThread || channel.type === ChannelType.PrivateThread;
 
-        // Parse embeds if provided
-        let embeds;
-        if (rawEmbeds) {
-            try {
-                const parsed = JSON.parse(rawEmbeds);
-                const embedArray = Array.isArray(parsed) ? parsed : [parsed];
-
-                embeds = embedArray.map((embed: any) => {
-                    if (embed.color && typeof embed.color === 'string') {
-                        embed.color = convertHexToInt(embed.color);
-                    }
-                    if (embed.timestamp && typeof embed.timestamp === 'number') {
-                        embed.timestamp = convertEpochToISO8601(embed.timestamp);
-                    }
-                    return embed;
-                });
-            } catch (error) {
-                return interaction.reply({
-                    content: 'Invalid embed JSON provided. Please ensure it is properly formatted.',
-                    ephemeral: true,
-                });
-            }
-        }
-
-        const files = fileAttachment ? [new AttachmentBuilder(fileAttachment.url)] : undefined;
-
-        // Ensure the channel is a text-based channel
-        if (!(channel.type === ChannelType.GuildText || 
-            channel.type === ChannelType.GuildAnnouncement || 
-            channel.type === ChannelType.PublicThread || 
-            channel.type === ChannelType.PrivateThread)) {
-            return interaction.reply({
-                content: 'The provided channel is not a text-based channel.',
-                ephemeral: true,
-            });
-        }
 
         try {
+            await interaction.deferReply({ephemeral: true});
+
+            const embeds = rawEmbeds ? parseEmbeds(rawEmbeds) : [];
+            const components = parseComponents(rawComponents);
+            const files = getAttachments(fileAttachment);
+
+            if (!isSendableChannel) throw new CustomError('The provided channel is not a text-based channel.', ErrorType.Error);
+
             // Fetch the message to edit
             const targetChannel = channel as TextBasedChannel;
-            const message = await targetChannel.messages.fetch(messageId);
+            const message = await validateMessage(targetChannel, messageId);
+
+            if (!message) throw new CustomError('Message not found. Please provide a valid message ID.', ErrorType.Error);
     
-            if (!message) {
-                return interaction.reply({
-                    content: 'Message not found. Please provide a valid message ID.',
-                    ephemeral: true,
+            if (!message.editable) throw new CustomError('This message cannot be edited.', ErrorType.Error);
+    
+            if (isDestructive) {
+                // Replace entire message payload
+                await message.edit({
+                    content: content ?? null, // If no content provided, clear it
+                    embeds: embeds ?? [], // Replace embeds if provided
+                    files: files ?? [],
+                    components: components ?? [],   // Replace files if provided
+                });
+            } else {
+                // Patch specific fields
+                const updatedContent = content ?? message.content;
+
+                const updatedEmbeds = embeds
+                    ? message.embeds.map((existingEmbed, index) => {
+                        const updatedEmbedData = embeds[index] ?? {};
+                        return {
+                            ...existingEmbed.toJSON(), // Convert existing embed to JSON for modification
+                            ...updatedEmbedData,      // Overwrite fields with provided values
+                        };
+                    })
+                    : message.embeds.map(embed => embed.toJSON());
+
+                await message.edit({
+                    content: updatedContent,
+                    embeds: updatedEmbeds,
+                    files: files ?? undefined,
+                    components: components ?? undefined 
                 });
             }
-    
-            if (!message.editable) {
-                return interaction.reply({
-                    content: 'This message cannot be edited.',
-                    ephemeral: true,
-                });
-            }
-    
-            // Edit the message
-            await message.edit({
-                content: content ?? null, // If no content provided, clear it
-                embeds: embeds ?? [], // Replace embeds if provided
-                files: files ?? [],   // Replace files if provided
-            });
-    
-            return interaction.reply({
-                content: `Message successfully edited in ${channel.name}.`,
-                ephemeral: true,
-            });
+            
+            return interaction.editReply({content: `Message successfully ${isDestructive ? 'replaced' : 'updated'} in ${channel.name}.`});
+            
         } catch (error) {
-            console.error(error);
-            return interaction.reply({
-                content: 'Failed to edit the message. Please check the details and try again.',
-                ephemeral: true,
-            });
+            handleCommandError(interaction, error);
         }
     }
 
