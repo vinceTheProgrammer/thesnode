@@ -32,3 +32,16 @@ export async function validateMessage(channel: TextBasedChannel, messageId: stri
 
     return message;
 }
+
+export function parseMessageLink(link: string): { guildId: string; channelId: string; messageId: string } | null {
+    const regex = /https:\/\/discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)/;
+    const match = link.match(regex);
+
+    if (!match) return null;
+
+    const [, guildId, channelId, messageId] = match;
+
+    if (!guildId || !channelId || !messageId) return null;
+
+    return { guildId, channelId, messageId };
+}
