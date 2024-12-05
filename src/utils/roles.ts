@@ -47,6 +47,7 @@ export async function clearBadgeRoles(discordMember: GuildMember) {
 export async function removeLinkedRole(discordMember: GuildMember) {
     try {
         await discordMember.roles.remove(RoleId.Linked);
+        await discordMember.roles.add(RoleId.Unlinked);
     } catch (error) {
         throw new CustomError(`Failed to remove "Linked" role for <@${discordMember.id}>`, ErrorType.Error, error as Error);
     }
@@ -55,6 +56,7 @@ export async function removeLinkedRole(discordMember: GuildMember) {
 export async function giveLinkedRole(discordMember: GuildMember) {
     try {
         await discordMember.roles.add(RoleId.Linked);
+        await discordMember.roles.remove(RoleId.Unlinked);
     } catch (error) {
         throw new CustomError(`Failed to give "Linked" role to <@${discordMember.id}>`, ErrorType.Error, error as Error);
     }
