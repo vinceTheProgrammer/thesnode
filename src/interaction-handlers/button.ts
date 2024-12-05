@@ -40,7 +40,7 @@ export class ButtonHandler extends InteractionHandler {
   }
 
   public override async parse(interaction: ButtonInteraction) {
-    if (interaction.customId === 'link-dm-init') {
+    if (interaction.customId === 'link-verify-init') {
       return this.some(); // Indicates this handler is responsible for this interaction
     }
     return this.none(); // Skip if not the correct customId
