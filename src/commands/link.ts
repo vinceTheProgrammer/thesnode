@@ -68,7 +68,7 @@ export class PingCommand extends Command {
 
           if (keyPresent) {
 
-            if (stillLinkedId) {
+            if (stillLinkedId && stillLinkedId !== interaction.user.id) {
               await unlinkUser(stillLinkedId).catch(error => { throw error });
               if (interaction.guild) {
                 const member = await interaction.guild.members.fetch(stillLinkedId).catch(err => {console.log(err)});
