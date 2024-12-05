@@ -2,6 +2,7 @@ import type { Command } from "@sapphire/framework";
 import { getErrorEmbed, getWarningEmbed } from "./embeds.js";
 import { Prisma } from "@prisma/client";
 import { ErrorType } from "../constants/errors.js";
+import type { ButtonInteraction, ModalSubmitInteraction } from "discord.js";
 
 export class CustomError extends Error {
     originalError: Error | null;
@@ -21,7 +22,7 @@ export class CustomError extends Error {
 }
 
 export function handleCommandError(
-    interaction: Command.ChatInputCommandInteraction | Command.ContextMenuCommandInteraction,
+    interaction: Command.ChatInputCommandInteraction | Command.ContextMenuCommandInteraction | ModalSubmitInteraction | ButtonInteraction,
     error: unknown
 ) {
     if (error instanceof CustomError) {
