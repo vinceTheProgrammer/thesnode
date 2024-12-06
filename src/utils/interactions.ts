@@ -104,8 +104,8 @@ export async function initLink(interaction: Command.ChatInputCommandInteraction 
               if (interaction.guild) {
                 const member = await interaction.guild.members.fetch(stillLinkedId).catch(err => {console.log(err)});
                 if (member) {
-                  removeLinkedRole(member).catch(err => {console.log(err)});
-                  clearBadgeRoles(member).catch(err => {console.log(err)});
+                  await removeLinkedRole(member).catch(err => {console.log(err)});
+                  await clearBadgeRoles(member).catch(err => {console.log(err)});
                 }
               }
             }
@@ -114,8 +114,8 @@ export async function initLink(interaction: Command.ChatInputCommandInteraction 
             if (interaction.guild) {
               const member = await interaction.guild.members.fetch(interaction.user.id).catch(err => {console.log(err)});
               if (member) {
-                giveLinkedRole(member).catch(err => {console.log(err)});
-                syncBadgeRoles(member, user).catch(err => {console.log(err)});
+                await giveLinkedRole(member).catch(err => {console.log(err)});
+                await syncBadgeRoles(member, user).catch(err => {console.log(err)});
               }
             }
 
