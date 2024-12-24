@@ -21,6 +21,8 @@ export class StarsCommand extends Command {
       }
 
     public override async chatInputRun(interaction: ChatInputCommandInteraction) {
+        await interaction.deferReply();
+
         // Ensure the interaction is in a guild
         if (!interaction.guild) {
             return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
