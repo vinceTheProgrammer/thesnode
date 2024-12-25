@@ -48,16 +48,13 @@ export class StarsCommand extends Command {
         // Calculate star reactions for each thread
         const starCounts = await Promise.all(
             recentThreads.map(async (thread) => {
-                const messages = await thread.messages.fetch();
+                const message = await thread.fetchStarterMessage();
                 let starCount = 0;
-
-                messages.forEach(message => {
-                    const starReaction = message.reactions.cache.get('⭐');
-                    if (starReaction) {
-                        starCount += starReaction.count;
-                    }
-                });
-
+                if (!message) return { thread, starCount };
+                const starReaction = message.reactions.cache.get('⭐');
+                if (starReaction) {
+                    starCount += starReaction.count;
+                }
                 return { thread, starCount };
             })
         );
