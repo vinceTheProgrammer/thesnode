@@ -21,17 +21,17 @@ export class StarsCommand extends Command {
       }
 
     public override async chatInputRun(interaction: ChatInputCommandInteraction) {
-        await interaction.deferReply();
+        await interaction.deferReply({ephemeral: true});
 
         // Ensure the interaction is in a guild
         if (!interaction.guild) {
-            return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
+            return interaction.editReply({ content: 'This command can only be used in a server.' });
         }
 
         // Ensure the channel is a forum channel
         const forumChannel = this.container.client.channels.cache.get(ChannelId.Showoff);
         if (!forumChannel || forumChannel.type !== ChannelType.GuildForum) {
-            return interaction.reply({ content: 'The hardcoded channel is not a forum channel. (Blame Vince)', ephemeral: true });
+            return interaction.editReply({ content: 'The hardcoded channel is not a forum channel. (Blame Vince)' });
         }
 
         // Calculate the date one week ago
@@ -42,7 +42,7 @@ export class StarsCommand extends Command {
         const recentThreads = threads.threads.filter(thread => thread.createdAt && thread.createdAt.getTime() >= oneWeekAgo);
 
         if (!recentThreads.size) {
-            return interaction.reply({ content: 'No recent threads found within the last week.', ephemeral: true });
+            return interaction.editReply({ content: 'No recent threads found within the last week.' });
         }
 
         // Calculate star reactions for each thread
@@ -83,6 +83,6 @@ export class StarsCommand extends Command {
             .setTitle(title)
             .setDescription(description)
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed] });
     }
 }
