@@ -24,7 +24,7 @@ export class LinkedUserStatsCommand extends Command {
             builder
                 .setName(this.name)
                 .setDescription(this.description),
-                //{ idHints: ['1309806191735603261'] }
+                { idHints: ['1324644451473166357'] }
         );
     }
 
