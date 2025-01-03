@@ -16,8 +16,8 @@ export async function checkBirthdayIsWithinTos(snUser: SnUser, discordUser: User
 
 export async function logLinkEventToLinkingLog(snUser: SnUser, discordUser: User) : Promise<void> {
 
-    let snString = snUser.stats.joinDate ? `account created ${getDiscordRelativeTime(snUser.stats.joinDate)}` : 'account created: null';
-    snString += snUser.socials.birthday ? `\nborn ${getDiscordRelativeTime(snUser.socials.birthday)}` : '';
+    let snString = snUser.stats.joinDate ? `account created ${getDiscordRelativeTime(snUser.stats.joinDate)}` : 'account creation date is null';
+    snString += snUser.socials.birthday ? `\nborn ${getDiscordRelativeTime(snUser.socials.birthday)}` : '\nbirthday is null (probably not specified)';
 
     const linkEmbed = new EmbedBuilder()
         .setAuthor({
