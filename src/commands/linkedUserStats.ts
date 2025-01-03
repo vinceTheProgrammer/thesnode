@@ -73,8 +73,8 @@ export class LinkedUserStatsCommand extends Command {
             const unlinkedUserCount = await getTotalUnlinkedUserCount();
             // const membersWithMemberRole = memberRole.members.filter(member => !member.user.bot);
 
-            let membersWithMemberRole = guild.members.cache.filter(member => member.roles.cache.has(memberRole.id));
-            let membersWithoutMemberRole = guild.members.cache.filter(member => !member.roles.cache.has(memberRole.id));
+            let membersWithMemberRole = guild.members.cache.filter(member => member.roles.cache.has(memberRole.id) && !member.user.bot);
+            let membersWithoutMemberRole = guild.members.cache.filter(member => !member.roles.cache.has(memberRole.id) && !member.user.bot);
 
             const membersWithMemberRoleCount = membersWithMemberRole.size;
             const membersWithoutMemberRoleCount = membersWithoutMemberRole.size;
