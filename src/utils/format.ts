@@ -109,3 +109,8 @@ export function ordinalStringToNumber(input: string): number {
 
     return number;
 }
+
+export function getDiscordRelativeTime(date: Date) {
+    const unixTimestamp = Math.floor(date.getTime() / 1000);
+    return `<t:${unixTimestamp}:R>`;
+}

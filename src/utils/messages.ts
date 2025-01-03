@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message, TextChannel, type Embed, type MessagePayload, type TextBasedChannel } from "discord.js";
+import { EmbedBuilder, ForumChannel, Message, TextChannel, ThreadChannel, type Embed, type MessagePayload, type TextBasedChannel } from "discord.js";
 import { container } from '@sapphire/framework';
 import { MessageBuilder } from "@sapphire/discord.js-utilities";
 import { getAlertEmbed } from "./embeds.js";
@@ -11,9 +11,14 @@ export function sendAlert(channelId: string, message: string) {
     channel.send(messageBuilder);
 }
 
-export async function sendEmbed(channelId: string, embedBuilder: EmbedBuilder) {
-    const channel = container.client.channels.cache.get(channelId);
-    if (!channel || !(channel instanceof TextChannel)) return;
+export async function sendEmbed(channelId: string, embedBuilder: EmbedBuilder, threadId?: string) {
+    let channel = container.client.channels.cache.get(channelId);
+    if (!(channel instanceof TextChannel || channel instanceof ForumChannel)) return;
+    if (!channel) return;
+    if (threadId) {
+        channel = await channel.threads.fetch(threadId) || undefined;
+    }
+    if (!channel || !(channel instanceof TextChannel || channel instanceof ThreadChannel)) return;
     let messageBuilder = new MessageBuilder()
     .setEmbeds([embedBuilder]);
     return await channel.send(messageBuilder);

@@ -5,7 +5,7 @@ import { CustomError, handleCommandError } from "./errors.js";
 import { Command } from "@sapphire/framework";
 import { getSnUser } from "./users.js";
 import { ErrorType } from "../constants/errors.js";
-import { checkIfUserIsBanned, checkBirthdayIsWithinTos } from "./moderation.js";
+import { checkIfUserIsBanned, checkBirthdayIsWithinTos, logLinkEventToLinkingLog } from "./moderation.js";
 import { removeLinkedRole, clearBadgeRoles, giveLinkedRole, syncBadgeRoles } from "./roles.js";
 import { generateKey } from "./strings.js";
 
@@ -120,6 +120,7 @@ export async function initLink(interaction: Command.ChatInputCommandInteraction 
             }
 
             checkBirthdayIsWithinTos(nonStaleUser, interaction.user);
+            logLinkEventToLinkingLog(nonStaleUser, interaction.user);
 
             return await verification.update({ content: '', embeds: [getLinkSuccessEmbed(interaction.user.id, username)], components: [], files: []});
           } else {
