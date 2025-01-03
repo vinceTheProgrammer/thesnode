@@ -1,3 +1,4 @@
+import type { Collection, GuildMember } from 'discord.js';
 import prisma from '../utils/prisma.js';
 import { handlePrismaError } from './errors.js';
 
@@ -160,6 +161,42 @@ export async function findByDiscordIdWhereSnUsernameNotNull(discordId: string) {
                 snUsername: { not: null }
             }
         })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getUnlinkedUsersFromMembers(members: Collection<string, GuildMember>) {
+    try {
+        return await prisma.user.findMany({
+            where: {
+              discordId: {
+                in: Array.from(members.keys()),
+              },
+              snUsername: null,
+            },
+            select: {
+              discordId: true,
+            },
+          })
+    } catch (error) {
+        throw handlePrismaError(error);
+    }
+}
+
+export async function getLinkedUsersFromMembers(members: Collection<string, GuildMember>) {
+    try {
+        return await prisma.user.findMany({
+            where: {
+              discordId: {
+                in: Array.from(members.keys()),
+              },
+              snUsername: {not: null},
+            },
+            select: {
+              discordId: true,
+            },
+          })
     } catch (error) {
         throw handlePrismaError(error);
     }

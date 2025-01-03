@@ -6,8 +6,9 @@ import { parseEmbeds } from '../utils/embeds.js';
 import { getAttachments } from '../utils/attachments.js';
 import { parseComponents } from '../utils/components.js';
 import { MessageBuilder } from '@sapphire/discord.js-utilities';
-import { getTotalLinkedUserCount, getTotalUnlinkedUserCount, getTotalUserCount } from '../utils/database.js';
+import { getLinkedUsersFromMembers, getTotalLinkedUserCount, getTotalUnlinkedUserCount, getTotalUserCount, getUnlinkedUsersFromMembers } from '../utils/database.js';
 import { RoleId } from '../constants/roles.js';
+import { truncateString } from '../utils/format.js';
 
 export class LinkedUserStatsCommand extends Command {
     public constructor(context: Command.Context, options: Command.Options) {
@@ -23,7 +24,28 @@ export class LinkedUserStatsCommand extends Command {
         registry.registerChatInputCommand((builder) =>
             builder
                 .setName(this.name)
-                .setDescription(this.description),
+                .setDescription(this.description)
+                .addStringOption(option => {
+                                    return option
+                                        .setName('mode')
+                                        .setDescription('The mode to run this command in')
+                                        .setChoices([
+                                            {
+                                                name: 'counts',
+                                                value: 'counts'
+                                            },
+                                            {
+                                                name: 'limbo',
+                                                value: 'limbo'
+                                            },
+                                            {
+                                                name: 'unauthorized',
+                                                value: 'unauthorized'
+                                            }
+                                        ]
+                                        )
+                                        .setRequired(true)
+                                }),
                 { idHints: ['1324644451473166357'] }
         );
     }
@@ -31,6 +53,8 @@ export class LinkedUserStatsCommand extends Command {
     public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
         try {
             await interaction.deferReply({ephemeral: true});
+
+            const mode = interaction.options.getString("mode", true);
 
             const guild = interaction.guild;
 
@@ -40,11 +64,29 @@ export class LinkedUserStatsCommand extends Command {
 
             if (!memberRole) throw new CustomError("Member role is not defined. Likely a bad hardcoded ID, so blame Vince.", ErrorType.Error);
 
+            await guild.members.fetch();
+
+
             const memberCount = (await interaction.guild.members.fetch()).filter(member => !member.user.bot).size;
             const trackedUsersCount = await getTotalUserCount();
             const linkedUserCount = await getTotalLinkedUserCount();
             const unlinkedUserCount = await getTotalUnlinkedUserCount();
-            const memberWithMemberRoleCount = memberRole.members.filter(member => !member.user.bot).size;
+            // const membersWithMemberRole = memberRole.members.filter(member => !member.user.bot);
+
+            let membersWithMemberRole = guild.members.cache.filter(member => member.roles.cache.has(memberRole.id));
+            let membersWithoutMemberRole = guild.members.cache.filter(member => !member.roles.cache.has(memberRole.id));
+
+            const membersWithMemberRoleCount = membersWithMemberRole.size;
+            const membersWithoutMemberRoleCount = membersWithoutMemberRole.size;
+
+            const linkedUsersWithoutMemberRole = (await getLinkedUsersFromMembers(membersWithoutMemberRole)).map(user => membersWithoutMemberRole.get(user.discordId));
+            const unlinkedUsersWithMemberRole = (await getUnlinkedUsersFromMembers(membersWithMemberRole)).map(user => membersWithMemberRole.get(user.discordId));
+
+            const linkedUsersWithoutMemberRoleArray = linkedUsersWithoutMemberRole.map(member => member?.user.username);
+            const unlinkedUsersWithMemberRoleArray = unlinkedUsersWithMemberRole.map(member => member?.user.username);
+
+            const linkedUsersWithoutMemberRoleString = truncateString(linkedUsersWithoutMemberRoleArray.join('\n'), 4096);
+            const unlinkedUsersWithMemberRoleString = truncateString(unlinkedUsersWithMemberRoleArray.join('\n'), 4096);
 
             const statsEmbed = new EmbedBuilder()
                 .setTitle("Linked User Stats")
@@ -76,37 +118,40 @@ export class LinkedUserStatsCommand extends Command {
                     },
                     {
                         name: 'With Member Role',
-                        value: `${memberWithMemberRoleCount}`,
+                        value: `${membersWithMemberRoleCount}`,
                         inline: true
                     },
                     {
                         name: 'Without Member Role',
-                        value: `${memberCount - memberWithMemberRoleCount}`,
+                        value: `${membersWithoutMemberRoleCount}`,
                         inline: true
                     },
-                    // {
-                    //     name: 'Users in limbo',
-                    //     value: `${}`,
-                    //     inline: true
-                    // },
-                    // {
-                    //     name: 'Unauthorized users',
-                    //     value: `${}`,
-                    //     inline: true
-                    // }
+                    {
+                        name: 'Users in limbo',
+                        value: `${linkedUsersWithoutMemberRoleArray.length}`,
+                        inline: true
+                    },
+                    {
+                        name: 'Unauthorized users',
+                        value: `${unlinkedUsersWithMemberRole.length}`,
+                        inline: true
+                    }
                 ]);
 
-                // const limboUsersEmbed = new EmbedBuilder()
-                //     .setTitle("Users in limbo (linked but no member role)")
-                //     .setDescription(`${}`);
+                const limboUsersEmbed = new EmbedBuilder()
+                    .setTitle("Users in limbo (linked but no member role)")
+                    .setDescription(`${linkedUsersWithoutMemberRoleString.length > 0 ? linkedUsersWithoutMemberRoleString : "none"}`);
 
-                // const unauthorizedUsersEmbed = new EmbedBuilder()
-                //     .setTitle("Unauthorized users (not linked but has member role")
-                //     .setDescription(`${}`);
+                const unauthorizedUsersEmbed = new EmbedBuilder()
+                    .setTitle("Unauthorized users (not linked but has member role)")
+                    .setDescription(`${unlinkedUsersWithMemberRoleString.length > 0 ? unlinkedUsersWithMemberRoleString : "none"}`);
 
-                const message = new MessageBuilder()
-                    .setEmbeds([statsEmbed])
-            
+                const message = new MessageBuilder();
+
+                if (mode == "counts") message.setEmbeds([statsEmbed]);
+                else if (mode == "limbo") message.setEmbeds([limboUsersEmbed]);
+                else if (mode == "unauthorized") message.setEmbeds([unauthorizedUsersEmbed]);
+                else message.setEmbeds([statsEmbed]);
 
             return interaction.editReply(message);
 
