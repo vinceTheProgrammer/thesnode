@@ -3,7 +3,7 @@ import '@sapphire/plugin-scheduled-tasks/register';
 import { GatewayIntentBits } from 'discord.js';
 
 const client = new SapphireClient({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
   tasks: {
     bull: {
       connection: {}
