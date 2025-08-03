@@ -1,0 +1,1 @@
+export const GUILD_ID = '1294823264341987358';

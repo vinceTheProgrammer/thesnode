@@ -5,6 +5,7 @@ import { getBirthdayEmbed } from '../utils/embeds.js';
 import { ChannelId } from '../constants/channels.js';
 import { getReactionEmoji } from '../constants/birthdayMessages.js';
 import { createNoticesThread } from '../utils/threads.js';
+import { GUILD_ID } from '../constants/guild.js';
 
 export class AnnounceBirthdaysTask extends ScheduledTask {
 	public constructor(context: ScheduledTask.LoaderContext, options: ScheduledTask.Options) {
@@ -16,13 +17,24 @@ export class AnnounceBirthdaysTask extends ScheduledTask {
 
 	public async run() {
         try {
-			const birthdayUsers = await findTodaysBirthdays();
-			if (birthdayUsers.length == 0) return;
-			const birthdayEmbed = getBirthdayEmbed(birthdayUsers);
+			let birthdayUsers = await findTodaysBirthdays();
+			const guild = await this.container.client.guilds.fetch(GUILD_ID);
+			const presentBirthdayUsers: typeof birthdayUsers = [];
+
+			for (const u of presentBirthdayUsers) {
+			try {
+				await guild.members.fetch(u.discordId);
+				presentBirthdayUsers.push(u);
+			} catch {
+				// not in guild; skip
+			}
+			}
+			if (presentBirthdayUsers.length == 0) return;
+			const birthdayEmbed = getBirthdayEmbed(presentBirthdayUsers);
 			const msg = await sendEmbed(ChannelId.BirthdayAnnounce, birthdayEmbed);
       let birthdayDisplayname = ''; 
-      if (birthdayUsers.length === 1 && birthdayUsers[0]) birthdayDisplayname = (await this.container.client.users.fetch(birthdayUsers[0].discordId)).displayName;
-			if (msg) createNoticesThread(msg, `Happy birthday, ${birthdayUsers.length > 1 ? `${birthdayUsers.length} users` : `${birthdayDisplayname}`}`);
+      if (presentBirthdayUsers.length === 1 && presentBirthdayUsers[0]) birthdayDisplayname = (await this.container.client.users.fetch(presentBirthdayUsers[0].discordId)).displayName;
+			if (msg) createNoticesThread(msg, `Happy birthday, ${presentBirthdayUsers.length > 1 ? `${presentBirthdayUsers.length} users` : `${birthdayDisplayname}`}`);
 			const emoji = getReactionEmoji(birthdayEmbed.data.description ?? '');
 			msg?.react(emoji)
 		} catch (error) {
